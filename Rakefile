@@ -34,6 +34,11 @@ flow("Linting") do
   job "StandardRB", "bundle exec standardrb"
 end
 
+flow("Specs") do
+  # Single line variant
+  job "RSpec", "bundle exec rspec"
+end
+
 flow("Build") do
   # setup do
   #   job "Start docker", "echo docker start"

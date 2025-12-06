@@ -62,7 +62,7 @@ describe LocalCI::Flow do
       expect(Rake::Task["ci"].prerequisites).to eq(
         [
           "ci:setup",
-          "ci:test:teardown",
+          "ci:test:failure_check",
           "ci:teardown",
           "ci:failure_check"
         ]
@@ -102,6 +102,33 @@ describe LocalCI::Flow do
         command: ["ls", "-la"],
         block: nil
       )
+    end
+  end
+
+  describe "ci:flow:failure_check" do
+    before do
+      @flow = LocalCI::Flow.new(
+        name: "flow",
+        heading: "heading",
+        parallel: true,
+        block: -> {}
+      )
+    end
+
+    it "does nothing when there are no errors" do
+      expect(@flow).not_to receive(:abort)
+
+      ::Rake::Task["ci:flow:failure_check"].invoke
+    end
+
+    it "displays the failures and aborts when there are failures" do
+      expect(@flow).to receive(:abort).with(/heading failed, see CI\.log for more\./)
+
+      failure = double(:failure)
+      expect(failure).to receive(:display)
+      @flow.failures << failure
+
+      ::Rake::Task["ci:flow:failure_check"].invoke
     end
   end
 end
