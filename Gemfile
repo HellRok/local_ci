@@ -6,5 +6,5 @@ group :development do
 end
 
 group :test do
-  gem "neospec"
+  gem "rspec"
 end

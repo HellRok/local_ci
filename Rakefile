@@ -1,35 +1,92 @@
 require "local_ci"
 
-CHUNK = 15
+LocalCI::Rake.setup(self)
 
-desc "Run the CI suite locally"
-task :local_ci
 
-LocalCI.flow(:linting, "Linting") do
-  job "StandardRB" do
-    run "bundle exec standardrb"
-  end
+# ci:teardown
+#
+# ci:linting:failure_check
+# ci:linting:teardown
+# ci:linting:standardrb
+# ci:linting:setup
+#
+# ci:build:failure_check
+# ci:build:teardown
+# ci:build:file1
+# ci:build:file2
+# ci:build:file3
+# ci:build:file4
+# ci:build:file5
+# ci:build:setup
+#
+# ci:setup
+
+setup do
+  run "bundle check | bundle install"
+  run "echo", "global setup"
 end
 
-LocalCI.flow(:build, "Build") do
-  CHUNK.times do |i|
-    job "build-#{i}" do
-      run "sleep 1"
-    end
-  end
+teardown do
+  run "echo", "global teardown"
 end
 
-LocalCI.flow(:lint, "Lint") do
-  CHUNK.times do |i|
-    job "lint-#{i}" do
-      run "sleep 1"
-      run "echo 'hi'"
+flow("Linting") do
+  # Single line variant
+  job "StandardRB", "bundle exec standardrb"
+end
+
+flow("Build") do
+  setup do
+    run "echo docker start"
+  end
+
+  Dir.glob("*").each do |file|
+    job "Compile - #{file}" do
+      run "echo", "gcc", file
     end
+  end
+
+  teardown do
+    run "echo docker stop"
   end
 end
 
 namespace :standardrb do
   task :fix do
-    `bundle exec standardrb --fix-unsafely`
+    sh "bundle exec standardrb --fix-unsafely"
+  end
+end
+
+# CHUNK = 15
+#
+# desc "Run the CI suite locally"
+# task :local_ci
+#
+# LocalCI.flow(:linting, "Linting") do
+#   job "StandardRB" do
+#     run "bundle exec standardrb"
+#   end
+# end
+#
+# LocalCI.flow(:build, "Build") do
+#   CHUNK.times do |i|
+#     job "build-#{i}" do
+#       run "sleep 1"
+#     end
+#   end
+# end
+#
+# LocalCI.flow(:lint, "Lint") do
+#   CHUNK.times do |i|
+#     job "lint-#{i}" do
+#       run "sleep 1"
+#       run "echo 'hi'"
+#     end
+#   end
+# end
+
+namespace :standardrb do
+  task :fix do
+    sh "bundle exec standardrb --fix-unsafely"
   end
 end
