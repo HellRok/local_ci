@@ -23,8 +23,6 @@ module LocalCI
 
       define_failure_check
 
-      # @flow.comment = heading
-
       instance_exec(&block)
     end
 
@@ -41,6 +39,7 @@ module LocalCI
 
     def setup_expected_tasks
       ::Rake::Task.define_task("ci") unless ::Rake::Task.task_defined?("ci")
+      ::Rake::Task["ci"].comment = "Run the CI suite"
       ::Rake::Task.define_task("ci:setup") unless ::Rake::Task.task_defined?("ci:setup")
       ::Rake::Task.define_task("ci:teardown") unless ::Rake::Task.task_defined?("ci:teardown")
       ::Rake::Task.define_task("ci:failure_check") unless ::Rake::Task.task_defined?("ci:failure_check")
@@ -52,6 +51,7 @@ module LocalCI
       ::Rake::Task.define_task("#{@task}:teardown") unless ::Rake::Task.task_defined?("#{@task}:teardown")
       ::Rake::Task.define_task("#{@task}:failure_check") unless ::Rake::Task.task_defined?("#{@task}:failure_check")
       ::Rake::Task.define_task(@task) unless ::Rake::Task.task_defined?(@task)
+      ::Rake::Task[@task].comment = @heading
 
       ::Rake::Task["ci"].prerequisites << "ci:setup"
       ::Rake::Task["ci"].prerequisites << "#{@task}:failure_check"

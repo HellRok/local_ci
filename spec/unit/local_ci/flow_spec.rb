@@ -4,7 +4,9 @@ describe LocalCI::Flow do
   describe "#initialize" do
     context "when creating parallel" do
       it "call Rake::MultiTask" do
-        allow(Rake::Task).to receive(:[]).and_return(double(prerequisites: []))
+        task = double(:task, prerequisites: [])
+        allow(task).to receive(:comment=)
+        allow(Rake::Task).to receive(:[]).and_return(task)
         allow(Rake::Task).to receive(:define_task)
         expect(Rake::MultiTask).to receive(:define_task).with("ci:parallel:jobs")
 
@@ -19,7 +21,9 @@ describe LocalCI::Flow do
 
     context "when creating sequential" do
       it "call Rake::Task" do
-        allow(Rake::Task).to receive(:[]).and_return(double(prerequisites: []))
+        task = double(:task, prerequisites: [])
+        allow(task).to receive(:comment=)
+        allow(Rake::Task).to receive(:[]).and_return(task)
         allow(Rake::Task).to receive(:define_task)
         expect(Rake::Task).to receive(:define_task).with("ci:sequential:jobs")
 
@@ -49,6 +53,18 @@ describe LocalCI::Flow do
       expect(Rake::Task.task_defined?("ci:test:failure_check")).to be(true)
       expect(Rake::Task.task_defined?("ci:teardown")).to be(true)
       expect(Rake::Task.task_defined?("ci:failure_check")).to be(true)
+    end
+
+    it "gives tasks the right comments" do
+      LocalCI::Flow.new(
+        name: "test",
+        heading: "heading",
+        parallel: true,
+        block: -> {}
+      )
+
+      expect(Rake::Task["ci"].comment).to eq("Run the CI suite")
+      expect(Rake::Task["ci:test"].comment).to eq("heading")
     end
 
     it "has the correct prerequisites for all tasks" do

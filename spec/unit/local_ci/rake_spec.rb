@@ -12,12 +12,5 @@ describe LocalCI::Rake do
 
       LocalCI::Rake.setup(@klass)
     end
-
-    it "creates a top level ci task" do
-      expect(@klass).to receive(:send).with(:desc, "Run the CI suite locally")
-      expect(@klass).to receive(:send).with(:task, :ci)
-
-      LocalCI::Rake.setup(@klass)
-    end
   end
 end
