@@ -1,24 +1,23 @@
 module LocalCI
   class Flow
-    def pastel = @pastel ||= Pastel.new(enabled: TTY::Color.support?)
-    def runner = @runner ||= TTY::Command.new(output: Logger.new("ci.log"))
+    attr_accessor :task, :heading, :spinner, :failures
 
     def initialize(name:, heading:, parallel:, block:)
       @task = "ci:#{name}"
       @parallel = parallel
-      # @failures = []
-      # @heading = heading
-      # @job_spinner = TTY::Spinner::Multi.new(
-      #   "[:spinner] #{pastel.bold.blue(heading)}",
-      #   format: :classic,
-      #   success_mark: pastel.green("✓"),
-      #   error_mark: pastel.red("✗"),
-      #   style: {
-      #     top: "",
-      #     middle: "    ",
-      #     bottom: "    "
-      #   }
-      # )
+      @failures = []
+      @heading = heading
+      @spinner = TTY::Spinner::Multi.new(
+        "[:spinner] #{LocalCI::Helper.pastel.bold.blue(@heading)}",
+        format: :classic,
+        success_mark: LocalCI::Helper.pastel.green("✓"),
+        error_mark: LocalCI::Helper.pastel.red("✗"),
+        style: {
+          top: "",
+          middle: "    ",
+          bottom: "    "
+        }
+      )
 
       setup_expected_tasks
 
@@ -28,7 +27,7 @@ module LocalCI
       #     failure.display
       #   end
 
-      #   abort pastel.red("#{@heading} failed, see CI.log for more.") if @failures.any?
+      #   abort LocalCI::Helper.pastel.red("#{@heading} failed, see CI.log for more.") if @failures.any?
       # end
 
       # @flow.comment = heading
@@ -43,37 +42,6 @@ module LocalCI
         command: args,
         block: block
       )
-      # command = args
-
-      # raise ArgumentError, "Must specify a block or command" unless command || block_given?
-      # task = "#{@task}:#{title}"
-      # spinner = job_spinner.register("[:spinner] #{title}")
-
-      # ::Rake::Task.define_task(task) do
-      #   spinner.auto_spin
-      #   start = Time.now
-
-      #   if block_given?
-      #     instance_exec(&block)
-      #   else
-      #     run(*command)
-      #   end
-
-      #   took = Time.now - start
-      #   spinner.success("(#{took.round(2)}s)")
-      # rescue TTY::Command::ExitError => e
-      #   spinner.error
-      #   @failures << LocalCI::Failure.new(
-      #     job: title,
-      #     message: e.message
-      #   )
-      # end
-
-      # @flow.prerequisites << task
-    end
-
-    def run(command, *args)
-      runner.run command, *args
     end
 
     private

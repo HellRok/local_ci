@@ -21,14 +21,13 @@ LocalCI::Rake.setup(self)
 #
 # ci:setup
 
-setup do
-  run "bundle check | bundle install"
-  run "echo", "global setup"
-end
-
-teardown do
-  run "echo", "global teardown"
-end
+# setup do
+#   job "Bundle", "bundle check | bundle install"
+# end
+#
+# teardown do
+#   job "Echo", "echo", "global teardown"
+# end
 
 flow("Linting") do
   # Single line variant
@@ -36,9 +35,9 @@ flow("Linting") do
 end
 
 flow("Build") do
-  setup do
-    run "echo docker start"
-  end
+  # setup do
+  #   job "Start docker", "echo docker start"
+  # end
 
   Dir.glob("*").each do |file|
     job "Compile - #{file}" do
@@ -46,9 +45,9 @@ flow("Build") do
     end
   end
 
-  teardown do
-    run "echo docker stop"
-  end
+  # teardown do
+  #   job "Stop Docker", "echo docker stop"
+  # end
 end
 
 namespace :standardrb do

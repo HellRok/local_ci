@@ -1,10 +1,10 @@
 module LocalCI
   module DSL
-    def setup(heading = "Setup", parallel: true, &block)
+    def setup(heading = "Setup", parallel: false, &block)
       LocalCI::Flow.new(name: :setup, heading: heading, parallel: parallel, block: block)
     end
 
-    def teardown(heading = "Teardown", parallel: true, &block)
+    def teardown(heading = "Teardown", parallel: false, &block)
       LocalCI::Flow.new(name: :teardown, heading: heading, parallel: parallel, block: block)
     end
 
