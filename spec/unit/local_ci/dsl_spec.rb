@@ -8,25 +8,25 @@ describe LocalCI::DSL do
   describe ".flow" do
     it "calls LocalCI::Flow" do
       expect(LocalCI::Flow).to receive(:new).with(
-        task: :task,
+        name: :name,
         heading: "heading",
         parallel: "parallel",
         block: @block
       )
 
-      Support::DSLKlass.new.flow(:task, "heading", parallel: "parallel", &@block)
+      Support::DSLKlass.new.flow(:name, "heading", parallel: "parallel", &@block)
     end
 
     context "when only passed a heading" do
-      it "converts the heading to a sensible task name" do
+      it "converts the heading to a sensible name name" do
         expect(LocalCI::Flow).to receive(:new).with(
-          task: :my_cool_task,
-          heading: "My Cool Task!",
+          name: :my_cool_flow,
+          heading: "My Cool Flow!",
           parallel: true,
           block: @block
         )
 
-        Support::DSLKlass.new.flow("My Cool Task!", &@block)
+        Support::DSLKlass.new.flow("My Cool Flow!", &@block)
       end
     end
   end
@@ -34,7 +34,7 @@ describe LocalCI::DSL do
   describe ".setup" do
     it "calls LocalCI::Flow" do
       expect(LocalCI::Flow).to receive(:new).with(
-        task: :setup,
+        name: :setup,
         heading: "Setup",
         parallel: "parallel",
         block: @block
@@ -47,7 +47,7 @@ describe LocalCI::DSL do
   describe ".teardown" do
     it "calls LocalCI::Flow" do
       expect(LocalCI::Flow).to receive(:new).with(
-        task: :teardown,
+        name: :teardown,
         heading: "Teardown",
         parallel: "parallel",
         block: @block

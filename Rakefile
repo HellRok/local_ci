@@ -2,7 +2,6 @@ require "local_ci"
 
 LocalCI::Rake.setup(self)
 
-
 # ci:teardown
 #
 # ci:linting:failure_check
@@ -12,11 +11,12 @@ LocalCI::Rake.setup(self)
 #
 # ci:build:failure_check
 # ci:build:teardown
-# ci:build:file1
-# ci:build:file2
-# ci:build:file3
-# ci:build:file4
-# ci:build:file5
+# ci:build:jobs
+# ci:build:jobs:file1
+# ci:build:jobs:file2
+# ci:build:jobs:file3
+# ci:build:jobs:file4
+# ci:build:jobs:file5
 # ci:build:setup
 #
 # ci:setup
