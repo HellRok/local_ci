@@ -33,6 +33,8 @@ module LocalCI
       end
 
       ::Rake::Task["#{@flow.task}:jobs"].prerequisites << task
+
+      ::Rake::Task[task].prerequisites << "#{@flow.task}:setup" unless @flow.special?
     end
 
     def run(command, *args)

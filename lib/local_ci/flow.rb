@@ -19,9 +19,14 @@ module LocalCI
         }
       )
 
-      setup_expected_tasks
+      setup_required_tasks
+      if special?
+        setup_special_flow_tasks
+      else
+        setup_flow_tasks
+      end
 
-      define_failure_check
+      after_jobs
 
       instance_exec(&block)
     end
@@ -35,42 +40,76 @@ module LocalCI
       )
     end
 
-    private
-
-    def setup_expected_tasks
-      ::Rake::Task.define_task("ci") unless ::Rake::Task.task_defined?("ci")
-      ::Rake::Task["ci"].comment = "Run the CI suite"
-      ::Rake::Task.define_task("ci:setup") unless ::Rake::Task.task_defined?("ci:setup")
-      ::Rake::Task.define_task("ci:teardown") unless ::Rake::Task.task_defined?("ci:teardown")
-      ::Rake::Task.define_task("ci:failure_check") unless ::Rake::Task.task_defined?("ci:failure_check")
-      ::Rake::Task.define_task("#{@task}:setup") unless ::Rake::Task.task_defined?("#{@task}:setup")
-
-      klass = @parallel ? ::Rake::MultiTask : ::Rake::Task
-      klass.define_task("#{@task}:jobs") unless ::Rake::Task.task_defined?("#{@task}:jobs")
-
-      ::Rake::Task.define_task("#{@task}:teardown") unless ::Rake::Task.task_defined?("#{@task}:teardown")
-      ::Rake::Task.define_task("#{@task}:failure_check") unless ::Rake::Task.task_defined?("#{@task}:failure_check")
-      ::Rake::Task.define_task(@task) unless ::Rake::Task.task_defined?(@task)
-      ::Rake::Task[@task].comment = @heading
-
-      ::Rake::Task["ci"].prerequisites << "ci:setup"
-      ::Rake::Task["ci"].prerequisites << "#{@task}:failure_check"
-      ::Rake::Task["ci"].prerequisites << "ci:teardown"
-      ::Rake::Task["ci"].prerequisites << "ci:failure_check"
-
-      ::Rake::Task[@task].prerequisites << "#{@task}:failure_check"
-      ::Rake::Task["#{@task}:failure_check"].prerequisites << "#{@task}:teardown"
-      ::Rake::Task["#{@task}:teardown"].prerequisites << "#{@task}:jobs"
-      ::Rake::Task["#{@task}:jobs"].prerequisites << "#{@task}:setup"
+    def special?
+      ["ci:setup", "ci:teardown"].include?(@task)
     end
 
-    def define_failure_check
-      ::Rake::Task.define_task("#{@task}:failure_check") do
-        @failures.each do |failure|
-          failure.display
-        end
+    def isolated?
+      LocalCI::Task["ci"].already_invoked
+    end
 
-        abort LocalCI::Helper.pastel.red("#{@heading} failed, see CI.log for more.") if @failures.any?
+    private
+
+    def setup_required_tasks
+      ci_task = LocalCI::Task["ci", "Run the CI suite"]
+
+      LocalCI::Task["ci:setup", "Setup the system to run CI"]
+      LocalCI::Task["ci:teardown", "Cleanup after the CI"]
+
+      ci_task.add_prerequisite "ci:setup"
+      ci_task.define do
+        LocalCI::Task["ci:teardown"].invoke
+      end
+    end
+
+    def setup_flow_tasks
+      LocalCI::Task["#{@task}:setup"]
+
+      LocalCI::Task.new("#{@task}:jobs", parallel_prerequisites: @parallel)
+
+      LocalCI::Task["#{@task}:teardown"]
+      LocalCI::Task["#{@task}:failure_check"]
+      LocalCI::Task[@task, @heading]
+
+      LocalCI::Task["#{@task}:setup"]
+      LocalCI::Task["#{@task}:setup"].add_prerequisite "ci:setup"
+
+      LocalCI::Task[@task].add_prerequisite "#{@task}:teardown"
+      LocalCI::Task["#{@task}:failure_check"].add_prerequisite "#{@task}:teardown"
+      LocalCI::Task["#{@task}:teardown"].add_prerequisite "#{@task}:jobs"
+      LocalCI::Task["#{@task}:jobs"].add_prerequisite "#{@task}:setup"
+
+      LocalCI::Task["ci"].add_prerequisite @task
+    end
+
+    def setup_special_flow_tasks
+      LocalCI::Task.new("#{@task}:jobs", parallel_prerequisites: @parallel)
+      LocalCI::Task["#{@task}:failure_check"]
+
+      if @task == "ci:setup"
+        LocalCI::Task[@task].comment = "Setup for the CI suite"
+
+      elsif @task == "ci:teardown"
+        LocalCI::Task[@task].comment = "Teardown for the CI suite"
+      end
+
+      LocalCI::Task[@task].add_prerequisite "#{@task}:failure_check"
+      LocalCI::Task["#{@task}:failure_check"].add_prerequisite "#{@task}:jobs"
+    end
+
+    def after_jobs
+      LocalCI::Task[@task].define do
+        LocalCI::Task["#{@task}:teardown"].invoke
+        LocalCI::Task["ci:teardown"].invoke unless isolated? || special?
+
+        if @failures.any?
+          LocalCI::Task["ci:teardown"].invoke
+          @failures.each do |failure|
+            failure.display
+          end
+
+          abort LocalCI::Helper.pastel.red("#{@heading} failed, see CI.log for more.")
+        end
       end
     end
   end

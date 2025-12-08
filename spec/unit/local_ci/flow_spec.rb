@@ -50,9 +50,7 @@ describe LocalCI::Flow do
       expect(Rake::Task.task_defined?("ci:test:setup")).to be(true)
       expect(Rake::Task.task_defined?("ci:test:jobs")).to be(true)
       expect(Rake::Task.task_defined?("ci:test:teardown")).to be(true)
-      expect(Rake::Task.task_defined?("ci:test:failure_check")).to be(true)
       expect(Rake::Task.task_defined?("ci:teardown")).to be(true)
-      expect(Rake::Task.task_defined?("ci:failure_check")).to be(true)
     end
 
     it "gives tasks the right comments" do
@@ -64,6 +62,8 @@ describe LocalCI::Flow do
       )
 
       expect(Rake::Task["ci"].comment).to eq("Run the CI suite")
+      expect(Rake::Task["ci:setup"].comment).to eq("Setup the system to run CI")
+      expect(Rake::Task["ci:teardown"].comment).to eq("Cleanup after the CI")
       expect(Rake::Task["ci:test"].comment).to eq("heading")
     end
 
@@ -75,19 +75,11 @@ describe LocalCI::Flow do
         block: -> {}
       )
 
-      expect(Rake::Task["ci"].prerequisites).to eq(
-        [
-          "ci:setup",
-          "ci:test:failure_check",
-          "ci:teardown",
-          "ci:failure_check"
-        ]
-      )
-      expect(Rake::Task["ci:test"].prerequisites).to eq(["ci:test:failure_check"])
-      expect(Rake::Task["ci:test:failure_check"].prerequisites).to eq(["ci:test:teardown"])
+      expect(Rake::Task["ci"].prerequisites).to eq(["ci:setup", "ci:test"])
+      expect(Rake::Task["ci:test"].prerequisites).to eq(["ci:test:teardown"])
       expect(Rake::Task["ci:test:teardown"].prerequisites).to eq(["ci:test:jobs"])
       expect(Rake::Task["ci:test:jobs"].prerequisites).to eq(["ci:test:setup"])
-      expect(Rake::Task["ci:test:setup"].prerequisites).to eq([])
+      expect(Rake::Task["ci:test:setup"].prerequisites).to eq(["ci:setup"])
     end
 
     it "calls the expected jobs" do
@@ -121,7 +113,7 @@ describe LocalCI::Flow do
     end
   end
 
-  describe "ci:flow:failure_check" do
+  describe "#after_jobs" do
     before do
       @flow = LocalCI::Flow.new(
         name: "flow",
@@ -129,22 +121,78 @@ describe LocalCI::Flow do
         parallel: true,
         block: -> {}
       )
+
+      @ci = double(:ci, already_invoked: false)
+      allow(LocalCI::Task).to receive(:[]).with("ci").and_return(@ci)
+
+      @flow_teardown = double(:flow_teardown)
+      allow(@flow_teardown).to receive(:invoke)
+      allow(LocalCI::Task).to receive(:[]).with("ci:flow:teardown").and_return(@flow_teardown)
+
+      @teardown = double(:teardown)
+      allow(@teardown).to receive(:invoke)
+      allow(LocalCI::Task).to receive(:[]).with("ci:teardown").and_return(@teardown)
     end
 
-    it "does nothing when there are no errors" do
-      expect(@flow).not_to receive(:abort)
+    context "when there are no failures" do
+      it "runs ci:flow:teardown" do
+        expect(@flow_teardown).to receive(:invoke)
 
-      ::Rake::Task["ci:flow:failure_check"].invoke
+        ::Rake::Task["ci:flow"].invoke
+      end
+
+      context "when run in isolation" do
+        it "runs ci:teardown" do
+          expect(@teardown).to receive(:invoke)
+
+          ::Rake::Task["ci:flow"].invoke
+        end
+      end
+
+      context "when not run in isolation" do
+        before do
+          allow(@ci).to receive(:already_invoked).and_return(true)
+        end
+
+        it "does not run ci:teardown" do
+          expect(@teardown).not_to receive(:invoke)
+
+          ::Rake::Task["ci:flow"].invoke
+        end
+      end
     end
 
-    it "displays the failures and aborts when there are failures" do
-      expect(@flow).to receive(:abort).with(/heading failed, see CI\.log for more\./)
+    context "when there are failures" do
+      before do
+        @failure = double(:failure, display: "hi")
+        @flow.failures << @failure
 
-      failure = double(:failure)
-      expect(failure).to receive(:display)
-      @flow.failures << failure
+        allow(@flow).to receive(:abort)
+      end
 
-      ::Rake::Task["ci:flow:failure_check"].invoke
+      it "runs ci:flow:teardown" do
+        expect(@flow_teardown).to receive(:invoke)
+
+        ::Rake::Task["ci:flow"].invoke
+      end
+
+      it "invokes ci:teardown" do
+        expect(@teardown).to receive(:invoke)
+
+        ::Rake::Task["ci:flow"].invoke
+      end
+
+      it "displays the failures" do
+        expect(@failure).to receive(:display)
+
+        ::Rake::Task["ci:flow"].invoke
+      end
+
+      it "aborts with a message" do
+        expect(@flow).to receive(:abort).with(/heading failed, see CI\.log for more\./)
+
+        ::Rake::Task["ci:flow"].invoke
+      end
     end
   end
 end
