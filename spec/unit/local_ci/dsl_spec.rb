@@ -37,10 +37,23 @@ describe LocalCI::DSL do
         name: :setup,
         heading: "Setup",
         parallel: "parallel",
+        actions: false,
         block: @block
       )
 
       Support::DSLKlass.new.setup(parallel: "parallel", &@block)
+    end
+
+    it "passes through the heading" do
+      expect(LocalCI::Flow).to receive(:new).with(
+        name: :setup,
+        heading: "My Cool Setup",
+        parallel: "parallel",
+        actions: false,
+        block: @block
+      )
+
+      Support::DSLKlass.new.setup("My Cool Setup", parallel: "parallel", &@block)
     end
   end
 
@@ -50,10 +63,23 @@ describe LocalCI::DSL do
         name: :teardown,
         heading: "Teardown",
         parallel: "parallel",
+        actions: false,
         block: @block
       )
 
       Support::DSLKlass.new.teardown(parallel: "parallel", &@block)
+    end
+
+    it "passes through the heading" do
+      expect(LocalCI::Flow).to receive(:new).with(
+        name: :teardown,
+        heading: "My Cool Teardown",
+        parallel: "parallel",
+        actions: false,
+        block: @block
+      )
+
+      Support::DSLKlass.new.teardown("My Cool Teardown", parallel: "parallel", &@block)
     end
   end
 end

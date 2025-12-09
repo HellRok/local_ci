@@ -17,7 +17,7 @@ module LocalCI
         start = Time.now
 
         if block
-          instance_exec(&block)
+          LocalCI::ExecContext.new(flow: @flow).instance_exec(&block)
         else
           LocalCI::Helper.runner.run(*command)
         end
@@ -34,11 +34,7 @@ module LocalCI
 
       ::Rake::Task["#{@flow.task}:jobs"].prerequisites << task
 
-      ::Rake::Task[task].prerequisites << "#{@flow.task}:setup" unless @flow.special?
-    end
-
-    def run(command, *args)
-      LocalCI::Helper.runner.run command, *args
+      ::Rake::Task[task].prerequisites << "#{@flow.task}:setup" if @flow.actions?
     end
   end
 end

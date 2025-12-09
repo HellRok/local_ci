@@ -2,11 +2,13 @@ module LocalCI
   class Flow
     attr_accessor :task, :heading, :spinner, :failures
 
-    def initialize(name:, heading:, parallel:, block:)
-      @task = "ci:#{name}"
+    def initialize(name:, heading:, parallel:, block:, actions: true)
+      @task = name
+      @task = "ci:#{name}" unless @task.start_with?("ci:")
       @parallel = parallel
       @failures = []
       @heading = heading
+      @actions = actions
       @spinner = TTY::Spinner::Multi.new(
         "[:spinner] #{LocalCI::Helper.pastel.bold.blue(@heading)}",
         format: :classic,
@@ -20,33 +22,22 @@ module LocalCI
       )
 
       setup_required_tasks
-      if special?
-        setup_special_flow_tasks
-      else
+      if actions?
         setup_flow_tasks
+      else
+        setup_actionless_flow_tasks
       end
 
       after_jobs
 
-      instance_exec(&block)
+      LocalCI::ExecContext.new(flow: self).instance_exec(&block)
     end
 
-    def job(name, *args, &block)
-      LocalCI::Job.new(
-        flow: self,
-        name: name,
-        command: args,
-        block: block
-      )
-    end
+    def actions? = !!@actions
 
-    def special?
-      ["ci:setup", "ci:teardown"].include?(@task)
-    end
+    def actionless? = !actions?
 
-    def isolated?
-      LocalCI::Task["ci"].already_invoked
-    end
+    def isolated? = LocalCI::Task["ci"].already_invoked
 
     private
 
@@ -82,16 +73,9 @@ module LocalCI
       LocalCI::Task["ci"].add_prerequisite @task
     end
 
-    def setup_special_flow_tasks
+    def setup_actionless_flow_tasks
       LocalCI::Task.new("#{@task}:jobs", parallel_prerequisites: @parallel)
       LocalCI::Task["#{@task}:failure_check"]
-
-      if @task == "ci:setup"
-        LocalCI::Task[@task].comment = "Setup for the CI suite"
-
-      elsif @task == "ci:teardown"
-        LocalCI::Task[@task].comment = "Teardown for the CI suite"
-      end
 
       LocalCI::Task[@task].add_prerequisite "#{@task}:failure_check"
       LocalCI::Task["#{@task}:failure_check"].add_prerequisite "#{@task}:jobs"
@@ -100,7 +84,7 @@ module LocalCI
     def after_jobs
       LocalCI::Task[@task].define do
         LocalCI::Task["#{@task}:teardown"].invoke
-        LocalCI::Task["ci:teardown"].invoke unless isolated? || special?
+        LocalCI::Task["ci:teardown"].invoke unless isolated? || actionless?
 
         if @failures.any?
           LocalCI::Task["ci:teardown"].invoke

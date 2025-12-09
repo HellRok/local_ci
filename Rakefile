@@ -35,13 +35,21 @@ flow "Linting" do
 end
 
 flow "Specs" do
+  setup do
+    job "Specs Setup", "echo specs setup"
+  end
+
+  teardown do
+    job "Specs Teardown", "echo specs teardown"
+  end
+
   job "RSpec", "bundle exec rspec"
 end
 
 flow "Build" do
-  # setup do
-  #   job "Start docker", "echo docker start"
-  # end
+  setup do
+    job "Start docker", "echo docker start"
+  end
 
   Dir.glob("*").each do |file|
     job "Compile - #{file}" do
@@ -49,7 +57,7 @@ flow "Build" do
     end
   end
 
-  # teardown do
-  #   job "Stop Docker", "echo docker stop"
-  # end
+  teardown do
+    job "Stop Docker", "echo docker stop"
+  end
 end

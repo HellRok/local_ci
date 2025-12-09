@@ -5,6 +5,7 @@ require "tty-spinner"
 require "pastel"
 
 require "local_ci/dsl"
+require "local_ci/exec_context"
 require "local_ci/failure"
 require "local_ci/flow"
 require "local_ci/helper"
