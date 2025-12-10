@@ -1,15 +1,18 @@
 module LocalCI
   class Failure
-    attr_accessor :job, :message
+    attr_reader :job
+
     def initialize(job:, message:)
       @job = job
       @message = message
     end
 
-    def display
-      puts "#{LocalCI::Helper.pastel.bold.red("FAIL:")} #{@job}"
-      puts @message
-      puts
+    def message
+      <<~STR
+        #{LocalCI::Helper.pastel.bold.red("FAIL:")} #{@job}
+        #{@message}
+
+      STR
     end
   end
 end

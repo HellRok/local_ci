@@ -8,5 +8,8 @@ require "support/dsl_klass"
 RSpec.configure do |config|
   config.after(:example) do
     Rake::Task.clear
+
+    LocalCI::Helper.instance_variable_set(:@pastel, nil)
+    LocalCI::Helper.instance_variable_set(:@runner, nil)
   end
 end

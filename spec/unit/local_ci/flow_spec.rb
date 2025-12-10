@@ -22,10 +22,10 @@ describe LocalCI::Flow do
     context "when creating sequential" do
       it "call Rake::Task" do
         task = double(:task, prerequisites: [])
-        allow(task).to receive(:comment=)
-        allow(Rake::Task).to receive(:[]).and_return(task)
-        allow(Rake::Task).to receive(:define_task)
-        expect(Rake::Task).to receive(:define_task).with("ci:sequential:jobs")
+        expect(task).to receive(:comment=).at_least(:once)
+        expect(Rake::Task).to receive(:[]).and_return(task).at_least(:once)
+        expect(Rake::Task).to receive(:define_task).with("ci:sequential:jobs").at_least(:once)
+        expect(Rake::Task).to receive(:define_task).at_least(:once)
 
         LocalCI::Flow.new(
           name: "sequential",
@@ -36,21 +36,44 @@ describe LocalCI::Flow do
       end
     end
 
-    it "creates the expected tasks" do
-      LocalCI::Flow.new(
-        name: "test",
-        heading: "heading",
-        parallel: true,
-        block: -> {}
-      )
+    context "when actions is true" do
+      it "creates the expected tasks" do
+        LocalCI::Flow.new(
+          name: "actions",
+          heading: "heading",
+          parallel: true,
+          actions: true,
+          block: -> {}
+        )
 
-      expect(Rake::Task.task_defined?("ci")).to be(true)
-      expect(Rake::Task.task_defined?("ci:setup")).to be(true)
-      expect(Rake::Task.task_defined?("ci:test")).to be(true)
-      expect(Rake::Task.task_defined?("ci:test:setup")).to be(true)
-      expect(Rake::Task.task_defined?("ci:test:jobs")).to be(true)
-      expect(Rake::Task.task_defined?("ci:test:teardown")).to be(true)
-      expect(Rake::Task.task_defined?("ci:teardown")).to be(true)
+        expect(Rake::Task.task_defined?("ci")).to be(true)
+        expect(Rake::Task.task_defined?("ci:setup")).to be(true)
+        expect(Rake::Task.task_defined?("ci:actions")).to be(true)
+        expect(Rake::Task.task_defined?("ci:actions:setup")).to be(true)
+        expect(Rake::Task.task_defined?("ci:actions:jobs")).to be(true)
+        expect(Rake::Task.task_defined?("ci:actions:teardown")).to be(true)
+        expect(Rake::Task.task_defined?("ci:teardown")).to be(true)
+      end
+    end
+
+    context "when actions is false" do
+      it "creates the expected tasks" do
+        LocalCI::Flow.new(
+          name: "actionless",
+          heading: "heading",
+          parallel: true,
+          actions: false,
+          block: -> {}
+        )
+
+        expect(Rake::Task.task_defined?("ci")).to be(true)
+        expect(Rake::Task.task_defined?("ci:setup")).to be(true)
+        expect(Rake::Task.task_defined?("ci:actionless")).to be(true)
+        expect(Rake::Task.task_defined?("ci:actionless:setup")).to be(false)
+        expect(Rake::Task.task_defined?("ci:actionless:jobs")).to be(true)
+        expect(Rake::Task.task_defined?("ci:actionless:teardown")).to be(false)
+        expect(Rake::Task.task_defined?("ci:teardown")).to be(true)
+      end
     end
 
     it "gives tasks the right comments" do

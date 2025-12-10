@@ -1,5 +1,7 @@
 module LocalCI
   class ExecContext
+    attr_reader :flow
+
     def initialize(flow:)
       @flow = flow
     end

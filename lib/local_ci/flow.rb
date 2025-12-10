@@ -89,7 +89,7 @@ module LocalCI
         if @failures.any?
           LocalCI::Task["ci:teardown"].invoke
           @failures.each do |failure|
-            failure.display
+            puts failure.display
           end
 
           abort LocalCI::Helper.pastel.red("#{@heading} failed, see CI.log for more.")
