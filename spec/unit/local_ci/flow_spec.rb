@@ -187,7 +187,7 @@ describe LocalCI::Flow do
 
     context "when there are failures" do
       before do
-        @failure = double(:failure, display: "hi")
+        @failure = double(:failure, message: "hi")
         @flow.failures << @failure
 
         allow(@flow).to receive(:abort)
@@ -206,7 +206,7 @@ describe LocalCI::Flow do
       end
 
       it "displays the failures" do
-        expect(@failure).to receive(:display)
+        expect(@failure).to receive(:message)
 
         ::Rake::Task["ci:flow"].invoke
       end
