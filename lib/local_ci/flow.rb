@@ -1,25 +1,17 @@
 module LocalCI
   class Flow
-    attr_accessor :task, :heading, :spinner, :failures
+    attr_accessor :task, :heading, :spinner, :failures, :jobs, :output
 
     def initialize(name:, heading:, parallel:, block:, actions: true)
       @task = name
       @task = "ci:#{name}" unless @task.start_with?("ci:")
       @parallel = parallel
       @failures = []
-      @heading = heading
       @actions = actions
-      @spinner = TTY::Spinner::Multi.new(
-        "[:spinner] #{LocalCI::Helper.pastel.bold.blue(@heading)}",
-        format: :classic,
-        success_mark: LocalCI::Helper.pastel.green("✓"),
-        error_mark: LocalCI::Helper.pastel.red("✗"),
-        style: {
-          top: "",
-          middle: "    ",
-          bottom: "    "
-        }
-      )
+
+      @heading = heading
+      @jobs = []
+      @output = LocalCI::Output.new(flow: self)
 
       setup_required_tasks
       if actions?
@@ -88,11 +80,9 @@ module LocalCI
 
         if @failures.any?
           LocalCI::Task["ci:teardown"].invoke
-          @failures.each do |failure|
-            puts failure.message
-          end
+          output.failures
 
-          abort LocalCI::Helper.pastel.red("#{@heading} failed, see CI.log for more.")
+          abort LocalCI::Helper.pastel.red("#{@heading} failed, see ci.log for more.")
         end
       end
     end

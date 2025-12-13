@@ -2,12 +2,16 @@ require "spec_helper"
 
 describe LocalCI::Job do
   before do
+    @output = double(:output)
+    allow(@output).to receive(:update)
+
     @flow = LocalCI::Flow.new(
       name: "flow",
       heading: "heading",
       parallel: true,
       block: -> {}
     )
+    allow(@flow).to receive(:output).and_return(@output)
   end
 
   describe "#initialize" do
@@ -24,6 +28,7 @@ describe LocalCI::Job do
       expect(job.command).to eq("command")
       expect(job.block).to eq("block")
       expect(job.task).to eq("ci:flow:jobs:the_job_name")
+      expect(job.state).to eq(:waiting)
     end
 
     context "when passed no block or command" do
@@ -80,6 +85,31 @@ describe LocalCI::Job do
 
         ::Rake::Task["ci:flow:jobs:block_task"].invoke
       end
+
+      it "sets the state" do
+        job = LocalCI::Job.new(
+          flow: @flow,
+          name: "block task",
+          command: nil,
+          block: -> {}
+        )
+
+        ::Rake::Task["ci:flow:jobs:block_task"].invoke
+
+        expect(job.state).to eq(:success)
+      end
+
+      it "updates the output" do
+        job = LocalCI::Job.new(
+          flow: @flow,
+          name: "block task",
+          command: nil,
+          block: -> {}
+        )
+        expect(@output).to receive(:update).with(job)
+
+        ::Rake::Task["ci:flow:jobs:block_task"].invoke
+      end
     end
 
     context "when running one command inline" do
@@ -97,6 +127,15 @@ describe LocalCI::Job do
     end
 
     context "when the job fails" do
+      before do
+        @job = LocalCI::Job.new(
+          flow: @flow,
+          name: "Raises an Error",
+          command: "exit 1",
+          block: nil
+        )
+      end
+
       it "is recorded against the flow" do
         expect(LocalCI::Helper.runner).to receive(:run).with("exit 1")
           .and_raise(
@@ -110,16 +149,22 @@ describe LocalCI::Job do
             )
           )
 
-        LocalCI::Job.new(
-          flow: @flow,
-          name: "Raises an Error",
-          command: "exit 1",
-          block: nil
-        )
         ::Rake::Task["ci:flow:jobs:raises_an_error"].invoke
 
         expect(@flow.failures.size).to eq(1)
         expect(@flow.failures.first.job).to eq("Raises an Error")
+      end
+
+      it "sets the state" do
+        ::Rake::Task["ci:flow:jobs:raises_an_error"].invoke
+
+        expect(@job.state).to eq(:failed)
+      end
+
+      it "updates the output" do
+        expect(@output).to receive(:update).with(@job)
+
+        ::Rake::Task["ci:flow:jobs:raises_an_error"].invoke
       end
     end
   end

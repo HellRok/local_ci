@@ -187,10 +187,14 @@ describe LocalCI::Flow do
 
     context "when there are failures" do
       before do
-        @failure = double(:failure, message: "hi")
+        @failure = double(:failure, job: "job", message: "hi")
         @flow.failures << @failure
 
         allow(@flow).to receive(:abort)
+
+        @output = double(:output)
+        allow(@output).to receive(:failures)
+        allow(@flow).to receive(:output).and_return(@output)
       end
 
       it "runs ci:flow:teardown" do
@@ -206,13 +210,13 @@ describe LocalCI::Flow do
       end
 
       it "displays the failures" do
-        expect(@failure).to receive(:message)
+        expect(@output).to receive(:failures)
 
         ::Rake::Task["ci:flow"].invoke
       end
 
       it "aborts with a message" do
-        expect(@flow).to receive(:abort).with(/heading failed, see CI\.log for more\./)
+        expect(@flow).to receive(:abort).with(/heading failed, see ci\.log for more\./)
 
         ::Rake::Task["ci:flow"].invoke
       end

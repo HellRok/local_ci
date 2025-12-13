@@ -1,12 +1,13 @@
 PATH
   remote: .
   specs:
-    local_ci (0.0.2)
+    local_ci (0.0.4)
       logger
       pastel
       rake
       tty-command
-      tty-spinner
+      tty-cursor
+      tty-screen
 
 GEM
   remote: https://rubygems.org/
@@ -78,8 +79,7 @@ GEM
     tty-command (0.10.1)
       pastel (~> 0.8)
     tty-cursor (0.7.1)
-    tty-spinner (0.9.3)
-      tty-cursor (~> 0.7)
+    tty-screen (0.8.2)
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
     unicode-emoji (4.1.0)

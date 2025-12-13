@@ -1,7 +1,10 @@
 require "forwardable"
+require "json"
 require "logger"
+
 require "tty-command"
-require "tty-spinner"
+require "tty-cursor"
+require "tty-screen"
 require "pastel"
 
 require "local_ci/dsl"
@@ -10,5 +13,6 @@ require "local_ci/failure"
 require "local_ci/flow"
 require "local_ci/helper"
 require "local_ci/job"
+require "local_ci/output"
 require "local_ci/rake"
 require "local_ci/task"

@@ -1,19 +1,23 @@
 module LocalCI
   class Job
-    attr_accessor :flow, :name, :command, :block, :task, :spinner
+    attr_reader :flow, :name, :command, :block, :task, :state, :duration
 
     def initialize(flow:, name:, command:, block:)
       @flow = flow
-      @name = name
-      @command = command
-      @block = block
+      @flow.jobs << self
       @task = "#{@flow.task}:jobs:#{LocalCI::Helper.taskize(name)}"
 
+      @command = command
+      @block = block
+
+      @name = name
+      @state = :waiting
+
       raise ArgumentError, "Must specify a block or command" unless command || block
-      @spinner = flow.spinner.register("[:spinner] #{name}")
 
       ::Rake::Task.define_task(task) do
-        @spinner.auto_spin
+        @state = :running
+        @flow.output.update(self)
         start = Time.now
 
         if block
@@ -21,20 +25,27 @@ module LocalCI
         else
           LocalCI::Helper.runner.run(*command)
         end
-
-        took = Time.now - start
-        @spinner.success("(#{took.round(2)}s)")
+        @state = :success
       rescue TTY::Command::ExitError => e
-        spinner.error
+        @state = :failed
         @flow.failures << LocalCI::Failure.new(
           job: @name,
           message: e.message
         )
+      ensure
+        @duration = Time.now - start
+        @flow.output.update(self)
       end
 
       ::Rake::Task["#{@flow.task}:jobs"].prerequisites << task
 
       ::Rake::Task[task].prerequisites << "#{@flow.task}:setup" if @flow.actions?
     end
+
+    def waiting? = @state == :waiting
+    def running? = @state == :running
+    def success? = @state == :success
+    def failed? = @state == :failed
+    def done? = [:success, :failed].include? @state
   end
 end
