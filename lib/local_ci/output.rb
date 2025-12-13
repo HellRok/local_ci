@@ -9,6 +9,21 @@ module LocalCI
       @mutex = Mutex.new
     end
 
+    def start_thread
+      @thread = Thread.new {
+        loop do
+          @mutex.synchronize { draw(final: @thread_should_exit) }
+          break if @thread_should_exit
+          sleep 0.1
+        end
+      }
+    end
+
+    def finish
+      @thread_should_exit = true
+      @thread.join
+    end
+
     def pastel = LocalCI::Helper.pastel
     def cursor = TTY::Cursor
     def screen = TTY::Screen
@@ -19,11 +34,17 @@ module LocalCI
     def done? = @flow.jobs.all?(&:done?)
 
     def update(job)
-      @job = job
+      if tty?
+        finish and return if done?
 
-      @mutex.synchronize {
-        tty? ? output : json_output
-      }
+        return if @thread&.alive?
+
+        start_thread
+      else
+        @job = job
+
+        @mutex.synchronize { json_output }
+      end
     end
 
     def failures
@@ -40,7 +61,7 @@ module LocalCI
       }
     end
 
-    def output
+    def draw(final: false)
       if @first_paint
         @start = Time.now
         @first_paint = false
@@ -51,6 +72,8 @@ module LocalCI
       puts heading_line
       @flow.jobs.each { puts job_line it }
       puts footer_line
+
+      puts if final
     end
 
     def color(message)

@@ -4,8 +4,11 @@ describe LocalCI::Output do
   before do
     @job = double(:job)
     @flow = double(:flow, jobs: [])
+    @thread = double(:thread, alive?: true)
+    allow(@thread).to receive(:join)
 
     @output = LocalCI::Output.new(flow: @flow)
+    @output.instance_variable_set(:@thread, @thread)
   end
 
   describe "#update" do
@@ -14,26 +17,70 @@ describe LocalCI::Output do
       allow(@output).to receive(:json_output)
     end
 
-    it "sets the job" do
-      @output.update(@job)
-      expect(@output.job).to eq(@job)
-    end
+    context "when we are not in a TTY" do
+      before do
+        expect(@output).to receive(:tty?).and_return(false)
+      end
 
-    context "when we are in a TTY" do
-      it "runs output" do
-        expect(@output).to receive(:tty?).and_return(true)
-        expect(@output).to receive(:output)
+      it "sets the job" do
+        @output.update(@job)
+        expect(@output.job).to eq(@job)
+      end
 
+      it "calls json_output" do
+        expect(@output).to receive(:json_output)
         @output.update(@job)
       end
     end
 
-    context "when we are not in a TTY" do
-      it "runs json_output" do
-        expect(@output).to receive(:tty?).and_return(false)
-        expect(@output).to receive(:json_output)
+    context "when we are in a TTY" do
+      before do
+        allow(@output).to receive(:tty?).and_return(true)
+      end
 
-        @output.update(@job)
+      context "when all jobs are done" do
+        before do
+          allow(@output).to receive(:done?).and_return(true)
+        end
+
+        it "calls finish" do
+          expect(@output).to receive(:finish)
+          @output.update(@job)
+        end
+
+        it "does not call start_thread" do
+          expect(@output).not_to receive(:start_thread)
+          @output.update(@job)
+        end
+      end
+
+      context "the thread is alive" do
+        before do
+          allow(@output).to receive(:done?).and_return(false)
+        end
+
+        it "does not call finish" do
+          expect(@output).not_to receive(:finish)
+          @output.update(@job)
+        end
+
+        it "does not call start_thread" do
+          expect(@output).not_to receive(:start_thread)
+          @output.update(@job)
+        end
+      end
+
+      context "the thread is not alive" do
+        before do
+          allow(@output).to receive(:done?).and_return(false)
+          allow(@thread).to receive(:alive?).and_return(false)
+        end
+
+        it "starts the thread" do
+          expect(@output).to receive(:start_thread)
+
+          @output.update(@job)
+        end
       end
     end
   end
@@ -70,13 +117,13 @@ describe LocalCI::Output do
     end
   end
 
-  describe "#output" do
+  describe "#draw" do
     before do
       allow(@output).to receive(:print)
       allow(@output).to receive(:puts)
-      allow(@output).to receive(:heading_line)
-      allow(@output).to receive(:job_line)
-      allow(@output).to receive(:footer_line)
+      allow(@output).to receive(:heading_line).and_return("heading-line")
+      allow(@output).to receive(:job_line).and_return("job-line")
+      allow(@output).to receive(:footer_line).and_return("footer-line")
 
       allow(@flow).to receive(:jobs).and_return(["job-1", "job-2"])
     end
@@ -90,13 +137,13 @@ describe LocalCI::Output do
         expect(TTY::Cursor).not_to receive(:clear_line)
         expect(TTY::Cursor).not_to receive(:up)
 
-        @output.output
+        @output.draw
       end
 
       it "sets the start time" do
         expect(Time).to receive(:now).and_return("time")
 
-        @output.output
+        @output.draw
 
         expect(@output.instance_variable_get(:@start)).to eq("time")
       end
@@ -117,7 +164,7 @@ describe LocalCI::Output do
 
         expect(@output).to receive(:print).with("clear-lineup")
 
-        @output.output
+        @output.draw
       end
     end
 
@@ -126,7 +173,7 @@ describe LocalCI::Output do
 
       expect(@output).to receive(:puts).with("heading-line")
 
-      @output.output
+      @output.draw
     end
 
     it "paints the jobs" do
@@ -136,7 +183,7 @@ describe LocalCI::Output do
       expect(@output).to receive(:puts).with("job-line-1")
       expect(@output).to receive(:puts).with("job-line-2")
 
-      @output.output
+      @output.draw
     end
 
     it "paints the footer" do
@@ -144,7 +191,15 @@ describe LocalCI::Output do
 
       expect(@output).to receive(:puts).with("footer-line")
 
-      @output.output
+      @output.draw
+    end
+
+    context "when final is true" do
+      it "draws an extra new line" do
+        expect(@output).to receive(:puts).with(no_args)
+
+        @output.draw(final: true)
+      end
     end
   end
 
