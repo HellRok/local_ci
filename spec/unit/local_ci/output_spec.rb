@@ -105,9 +105,13 @@ describe LocalCI::Output do
     context "on subsequent paints" do
       before do
         @output.instance_variable_set(:@first_paint, false)
+
+        allow(TTY::Cursor).to receive(:clear_line).and_return("")
+        allow(TTY::Cursor).to receive(:up).and_return("")
+        allow(@output).to receive(:print)
       end
 
-      it "clears lines" do
+      it "moves up and clears the line" do
         expect(TTY::Cursor).to receive(:clear_line).and_return("clear-line")
         expect(TTY::Cursor).to receive(:up).with(4).and_return("up")
 
@@ -288,24 +292,10 @@ describe LocalCI::Output do
       @pastel = Pastel.new
     end
 
-    context "when the flow is not done" do
-      it "returns a footer the length of the terminal with the duration without a new line" do
-        expect(@output).to receive(:done?).and_return(false)
-
-        expect(@pastel.strip(@output.footer_line)).to eq(
-          "-------(duration)---"
-        )
-      end
-    end
-
-    context "when the flow is done" do
-      it "returns a footer the length of the terminal with the duration with a new line" do
-        expect(@output).to receive(:done?).and_return(true)
-
-        expect(@pastel.strip(@output.footer_line)).to eq(
-          "-------(duration)---\n"
-        )
-      end
+    it "returns a footer the length of the terminal with the duration" do
+      expect(@pastel.strip(@output.footer_line)).to eq(
+        "-------(duration)---"
+      )
     end
   end
 

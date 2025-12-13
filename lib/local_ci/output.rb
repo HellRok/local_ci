@@ -112,7 +112,7 @@ module LocalCI
 
     def footer_line
       start_length = screen.width - 4 - duration.size - 1
-      color "#{"-" * start_length}(#{pastel.bold duration})---#{"\n" if done?}"
+      color "#{"-" * start_length}(#{pastel.bold duration})---"
     end
 
     def json_output

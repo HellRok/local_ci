@@ -13,8 +13,10 @@ describe LocalCI::Helper do
 
   describe ".runner" do
     it "returns a TTY::Command instance" do
+      expect(TTY::Color).to receive(:support?).and_return("support")
       expect(Logger).to receive(:new).with("ci.log").and_return("logger")
-      expect(TTY::Command).to receive(:new).with(output: "logger")
+      expect(TTY::Command).to receive(:new)
+        .with(color: "support", output: "logger")
         .and_return("tty-command")
 
       expect(LocalCI::Helper.runner).to eq("tty-command")

@@ -51,14 +51,12 @@ module LocalCI
       LocalCI::Task.new("#{@task}:jobs", parallel_prerequisites: @parallel)
 
       LocalCI::Task["#{@task}:teardown"]
-      LocalCI::Task["#{@task}:failure_check"]
       LocalCI::Task[@task, @heading]
 
       LocalCI::Task["#{@task}:setup"]
       LocalCI::Task["#{@task}:setup"].add_prerequisite "ci:setup"
 
       LocalCI::Task[@task].add_prerequisite "#{@task}:teardown"
-      LocalCI::Task["#{@task}:failure_check"].add_prerequisite "#{@task}:teardown"
       LocalCI::Task["#{@task}:teardown"].add_prerequisite "#{@task}:jobs"
       LocalCI::Task["#{@task}:jobs"].add_prerequisite "#{@task}:setup"
 
@@ -67,10 +65,8 @@ module LocalCI
 
     def setup_actionless_flow_tasks
       LocalCI::Task.new("#{@task}:jobs", parallel_prerequisites: @parallel)
-      LocalCI::Task["#{@task}:failure_check"]
 
-      LocalCI::Task[@task].add_prerequisite "#{@task}:failure_check"
-      LocalCI::Task["#{@task}:failure_check"].add_prerequisite "#{@task}:jobs"
+      LocalCI::Task[@task].add_prerequisite "#{@task}:jobs"
     end
 
     def after_jobs
