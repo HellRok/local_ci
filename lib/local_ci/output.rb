@@ -116,7 +116,7 @@ module LocalCI
 
     def duration
       seconds = Time.now - @start
-      minutes = seconds / 60
+      minutes = (seconds / 60).to_i
       hours = minutes / 60
 
       seconds %= 60
@@ -126,10 +126,10 @@ module LocalCI
         "#{hours}h #{minutes}m"
 
       elsif minutes >= 1
-        "#{minutes}m #{seconds}s"
+        "#{minutes}m #{seconds.floor}s"
 
       else
-        "#{seconds.round(2)}s"
+        "%.2fs" % seconds
       end
     end
 

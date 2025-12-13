@@ -362,12 +362,19 @@ describe LocalCI::Output do
 
         expect(@output.duration).to eq("39.43s")
       end
+
+      it "shows seconds with two decimal places even if it's exactly a second" do
+        @output.instance_variable_set(:@start, 5.0)
+        allow(Time).to receive(:now).and_return(45)
+
+        expect(@output.duration).to eq("40.00s")
+      end
     end
 
     context "when less than 60 minutes" do
       it "shows the minutes and seconds" do
         @output.instance_variable_set(:@start, 10)
-        allow(Time).to receive(:now).and_return(1240)
+        allow(Time).to receive(:now).and_return(1240.1)
 
         expect(@output.duration).to eq("20m 30s")
       end
@@ -376,7 +383,7 @@ describe LocalCI::Output do
     context "when greater than 60 minutes" do
       it "shows the hours and minutes" do
         @output.instance_variable_set(:@start, 10)
-        allow(Time).to receive(:now).and_return(3800)
+        allow(Time).to receive(:now).and_return(3800.1)
 
         expect(@output.duration).to eq("1h 3m")
       end
