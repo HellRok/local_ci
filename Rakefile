@@ -3,12 +3,18 @@ require "local_ci"
 
 LocalCI::Rake.setup(self)
 
-setup do
-  job "Bundle", "bundle check | bundle install"
+def run_on(commands:, image:, platform: "linux/amd64")
+  run "docker run " \
+    "--tty " \
+    "--workdir /app " \
+    "--mount type=bind,source=.,target=/app " \
+    "--platform #{platform} " \
+    "#{image} " \
+    "bash -c \"#{commands.join(" && ")}\""
 end
 
-teardown do
-  job "Echo", "echo", "global teardown"
+setup do
+  job "Bundle", "bundle check || bundle install"
 end
 
 flow "Linting" do
@@ -16,29 +22,38 @@ flow "Linting" do
 end
 
 flow "Specs" do
-  setup do
-    job "Specs Setup", "echo specs setup"
-  end
-
-  teardown do
-    job "Specs Teardown", "echo specs teardown"
-  end
-
   job "RSpec", "bundle exec rspec"
 end
 
-flow "Build" do
-  setup do
-    job "Start docker", "echo docker start"
-  end
-
-  Dir.glob("*").each do |file|
-    job "Compile - #{file}" do
-      run "echo", "gcc", file
+flow "MRI Ruby" do
+  %w[linux/amd64 linux/arm64].each do |platform|
+    %w[4.0-rc 3.4 3.3 3.2 3.1 3.0 2.7].each do |version|
+      job "[#{platform.split("/").last}] Ruby #{version}" do
+        run_on(
+          image: "ruby:#{version}",
+          platform: platform,
+          commands: [
+            "bundle config set --local without development",
+            "bundle install",
+            "bundle exec rspec --format documentation"
+          ]
+        )
+      end
     end
   end
+end
 
-  teardown do
-    job "Stop Docker", "echo docker stop"
+flow "JRuby" do
+  %w[10 9].each do |version|
+    job("[amd64] JRuby #{version}") do
+      run_on(
+        image: "jruby:#{version}",
+        commands: [
+          "bundle config set --local without development",
+          "bundle install",
+          "bundle exec rspec --format documentation"
+        ]
+      )
+    end
   end
 end

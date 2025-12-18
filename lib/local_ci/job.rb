@@ -42,10 +42,24 @@ module LocalCI
       ::Rake::Task[task].prerequisites << "#{@flow.task}:setup" if @flow.actions?
     end
 
-    def waiting? = @state == :waiting
-    def running? = @state == :running
-    def success? = @state == :success
-    def failed? = @state == :failed
-    def done? = [:success, :failed].include? @state
+    def waiting?
+      @state == :waiting
+    end
+
+    def running?
+      @state == :running
+    end
+
+    def success?
+      @state == :success
+    end
+
+    def failed?
+      @state == :failed
+    end
+
+    def done?
+      [:success, :failed].include? @state
+    end
   end
 end

@@ -24,14 +24,33 @@ module LocalCI
       @thread.join
     end
 
-    def pastel = LocalCI::Helper.pastel
-    def cursor = TTY::Cursor
-    def screen = TTY::Screen
-    def tty? = $stdout.isatty
+    def pastel
+      LocalCI::Helper.pastel
+    end
 
-    def passed? = @flow.jobs.all?(&:success?)
-    def failed? = @flow.failures.any?
-    def done? = @flow.jobs.all?(&:done?)
+    def cursor
+      TTY::Cursor
+    end
+
+    def screen
+      TTY::Screen
+    end
+
+    def tty?
+      $stdout.isatty
+    end
+
+    def passed?
+      @flow.jobs.all?(&:success?)
+    end
+
+    def failed?
+      @flow.failures.any?
+    end
+
+    def done?
+      @flow.jobs.all?(&:done?)
+    end
 
     def update(job)
       if tty?
@@ -70,7 +89,7 @@ module LocalCI
       end
 
       puts heading_line
-      @flow.jobs.each { puts job_line it }
+      @flow.jobs.each { |job| puts job_line job }
       puts footer_line
 
       puts if final

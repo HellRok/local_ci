@@ -25,11 +25,17 @@ module LocalCI
       LocalCI::ExecContext.new(flow: self).instance_exec(&block)
     end
 
-    def actions? = !!@actions
+    def actions?
+      !!@actions
+    end
 
-    def actionless? = !actions?
+    def actionless?
+      !actions?
+    end
 
-    def isolated? = LocalCI::Task["ci"].already_invoked
+    def isolated?
+      LocalCI::Task["ci"].already_invoked
+    end
 
     private
 
