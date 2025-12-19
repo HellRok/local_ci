@@ -15,5 +15,24 @@ module LocalCI
     def self.taskize(heading)
       heading.downcase.gsub(/\s/, "_").gsub(/[^\w]/, "").to_sym
     end
+
+    def self.human_duration(time_span)
+      seconds = time_span.dup
+      minutes = (seconds / 60).to_i
+      hours = minutes / 60
+
+      seconds %= 60
+      minutes %= 60
+
+      if hours >= 1
+        "#{hours}h #{minutes}m"
+
+      elsif minutes >= 1
+        "#{minutes}m #{seconds.floor}s"
+
+      else
+        "%.2fs" % seconds
+      end
+    end
   end
 end

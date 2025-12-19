@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    local_ci (0.0.5)
+    local_ci (0.0.6)
       logger
       pastel
       rake

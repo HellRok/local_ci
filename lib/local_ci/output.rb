@@ -121,35 +121,24 @@ module LocalCI
 
       result = cursor.clear_line
       if job.waiting?
-        result << "[ ] #{name}"
+        result << "[ ] "
       elsif job.running?
-        result << "[-] #{name}"
+        result << "[-] "
       elsif job.success?
-        result << "[#{pastel.green "✓"}] #{name}"
+        result << "[#{pastel.green "✓"}] "
       elsif job.failed?
-        result << "[#{pastel.red "✗"}] #{name}"
+        result << "[#{pastel.red "✗"}] "
       end
+
+      result << name
+
+      result << " (#{pastel.yellow LocalCI::Helper.human_duration(job.duration)})" unless job.waiting?
 
       result
     end
 
     def duration
-      seconds = Time.now - @start
-      minutes = (seconds / 60).to_i
-      hours = minutes / 60
-
-      seconds %= 60
-      minutes %= 60
-
-      if hours >= 1
-        "#{hours}h #{minutes}m"
-
-      elsif minutes >= 1
-        "#{minutes}m #{seconds.floor}s"
-
-      else
-        "%.2fs" % seconds
-      end
+      LocalCI::Helper.human_duration(Time.now - @start)
     end
 
     def footer_line

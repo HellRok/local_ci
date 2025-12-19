@@ -1,6 +1,6 @@
 module LocalCI
   class Job
-    attr_reader :flow, :name, :command, :block, :task, :state, :duration
+    attr_reader :flow, :name, :command, :block, :task, :state
 
     def initialize(flow:, name:, command:, block:)
       @flow = flow
@@ -18,7 +18,7 @@ module LocalCI
       ::Rake::Task.define_task(task) do
         @state = :running
         @flow.output.update(self)
-        start = Time.now
+        @start = Time.now
 
         if block
           LocalCI::ExecContext.new(flow: @flow).instance_exec(&block)
@@ -33,13 +33,19 @@ module LocalCI
           message: e.message
         )
       ensure
-        @duration = Time.now - start
+        @duration = duration
         @flow.output.update(self)
       end
 
       ::Rake::Task["#{@flow.task}:jobs"].prerequisites << task
 
       ::Rake::Task[task].prerequisites << "#{@flow.task}:setup" if @flow.actions?
+    end
+
+    def duration
+      return if @start.nil?
+
+      @duration || Time.now - @start
     end
 
     def waiting?

@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "local_ci"
-  s.version = "0.0.5"
+  s.version = "0.0.6"
   s.summary = "Run CI locally"
   s.description = "A way to run CI locally but also able to run easily on your hosted CI"
   s.authors = ["Sean Earle"]

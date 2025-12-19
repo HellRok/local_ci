@@ -291,29 +291,32 @@ describe LocalCI::Output do
 
     context "when the job is waiting" do
       it "returns no indicator and the job name" do
-        expect(@job).to receive(:waiting?).and_return(true)
+        expect(@job).to receive(:waiting?).and_return(true).twice
         expect(@pastel.strip(@output.job_line(@job))).to eq("[ ] job-name")
       end
     end
 
     context "when the job is running" do
-      it "returns an indicator and the job name" do
+      it "returns an indicator, the job name, and the duration" do
         expect(@job).to receive(:running?).and_return(true)
-        expect(@pastel.strip(@output.job_line(@job))).to eq("[-] job-name")
+        expect(@job).to receive(:duration).and_return(1.3)
+        expect(@pastel.strip(@output.job_line(@job))).to eq("[-] job-name (1.30s)")
       end
     end
 
     context "when the job was successful" do
-      it "returns an indicator and the job name" do
+      it "returns an indicator, the job name, and the duration" do
         expect(@job).to receive(:success?).and_return(true)
-        expect(@pastel.strip(@output.job_line(@job))).to eq("[✓] job-name")
+        expect(@job).to receive(:duration).and_return(70)
+        expect(@pastel.strip(@output.job_line(@job))).to eq("[✓] job-name (1m 10s)")
       end
     end
 
     context "when the job failed" do
-      it "returns an indicator and the job name" do
+      it "returns an indicator, the job name, and the duration" do
         expect(@job).to receive(:failed?).and_return(true)
-        expect(@pastel.strip(@output.job_line(@job))).to eq("[✗] job-name")
+        expect(@job).to receive(:duration).and_return(3720)
+        expect(@pastel.strip(@output.job_line(@job))).to eq("[✗] job-name (1h 2m)")
       end
     end
 
@@ -355,38 +358,13 @@ describe LocalCI::Output do
   end
 
   describe "#duration" do
-    context "when less than 60 seconds" do
-      it "shows seconds with two decimal places" do
-        @output.instance_variable_set(:@start, 5.567)
-        allow(Time).to receive(:now).and_return(45)
+    it "calls LocalCI::Helpers.human_duration" do
+      @output.instance_variable_set(:@start, 5)
+      allow(Time).to receive(:now).and_return(45)
 
-        expect(@output.duration).to eq("39.43s")
-      end
+      expect(LocalCI::Helper).to receive(:human_duration).with(40)
 
-      it "shows seconds with two decimal places even if it's exactly a second" do
-        @output.instance_variable_set(:@start, 5.0)
-        allow(Time).to receive(:now).and_return(45)
-
-        expect(@output.duration).to eq("40.00s")
-      end
-    end
-
-    context "when less than 60 minutes" do
-      it "shows the minutes and seconds" do
-        @output.instance_variable_set(:@start, 10)
-        allow(Time).to receive(:now).and_return(1240.1)
-
-        expect(@output.duration).to eq("20m 30s")
-      end
-    end
-
-    context "when greater than 60 minutes" do
-      it "shows the hours and minutes" do
-        @output.instance_variable_set(:@start, 10)
-        allow(Time).to receive(:now).and_return(3800.1)
-
-        expect(@output.duration).to eq("1h 3m")
-      end
+      @output.duration
     end
   end
 

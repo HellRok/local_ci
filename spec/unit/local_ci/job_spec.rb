@@ -168,4 +168,43 @@ describe LocalCI::Job do
       end
     end
   end
+
+  describe "#duration" do
+    before do
+      @job = LocalCI::Job.new(
+        flow: @flow,
+        name: "The Job Name!",
+        command: "command",
+        block: "block"
+      )
+    end
+
+    context "the job has finished" do
+      before do
+        @job.instance_variable_set(:@start, 100)
+        @job.instance_variable_set(:@duration, "duration")
+      end
+
+      it "returns the duration" do
+        expect(@job.duration).to eq("duration")
+      end
+    end
+
+    context "the job is still running" do
+      before do
+        @job.instance_variable_set(:@start, 100)
+        allow(Time).to receive(:now).and_return(300)
+      end
+
+      it "returns the duration" do
+        expect(@job.duration).to eq(200)
+      end
+    end
+
+    context "the job is waiting" do
+      it "returns nil" do
+        expect(@job.duration).to be_nil
+      end
+    end
+  end
 end

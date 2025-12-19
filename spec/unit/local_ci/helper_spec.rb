@@ -28,4 +28,28 @@ describe LocalCI::Helper do
       expect(LocalCI::Helper.taskize("Hello There!")).to eq(:hello_there)
     end
   end
+
+  describe "#human_duration" do
+    context "when less than 60 seconds" do
+      it "shows seconds with two decimal places" do
+        expect(LocalCI::Helper.human_duration(39.427)).to eq("39.43s")
+      end
+
+      it "shows seconds with two decimal places even if it's exactly a second" do
+        expect(LocalCI::Helper.human_duration(40)).to eq("40.00s")
+      end
+    end
+
+    context "when less than 60 minutes" do
+      it "shows the minutes and seconds" do
+        expect(LocalCI::Helper.human_duration(1230.1)).to eq("20m 30s")
+      end
+    end
+
+    context "when greater than 60 minutes" do
+      it "shows the hours and minutes" do
+        expect(LocalCI::Helper.human_duration(3790.1)).to eq("1h 3m")
+      end
+    end
+  end
 end
