@@ -13,13 +13,114 @@ describe LocalCI::Helper do
 
   describe ".runner" do
     it "returns a TTY::Command instance" do
-      expect(TTY::Color).to receive(:support?).and_return("support")
-      expect(Logger).to receive(:new).with("ci.log").and_return("logger")
+      expect(LocalCI::Helper).to receive(:color?).and_return("color")
+      expect(LocalCI::Helper).to receive(:logger).and_return("logger")
       expect(TTY::Command).to receive(:new)
-        .with(color: "support", output: "logger")
+        .with(color: "color", output: "logger")
         .and_return("tty-command")
 
       expect(LocalCI::Helper.runner).to eq("tty-command")
+    end
+  end
+
+  describe ".logger" do
+    before do
+      allow(LocalCI::Helper).to receive(:ci?).and_return(false)
+      allow(Logger).to receive(:new)
+      allow(ENV).to receive(:has_key?).with("LOCAL_CI_LOG_TO_STDOUT").and_return(false)
+      allow(ENV).to receive(:fetch).with("LOCAL_CI_LOG_FILE", "logs/local_ci.log").and_return("logs/local_ci.log")
+      allow(FileUtils).to receive(:mkdir_p)
+    end
+
+    context "within a CI environment" do
+      before do
+        allow(ENV).to receive(:fetch).with("LOCAL_CI_LOG_FILE", $stdout).and_return($stdout)
+        allow(LocalCI::Helper).to receive(:ci?).and_return(true)
+      end
+
+      it "uses $stdout" do
+        expect(Logger).to receive(:new).with($stdout)
+
+        LocalCI::Helper.logger
+      end
+
+      it "does not ensure the folder exists" do
+        expect(FileUtils).not_to receive(:mkdir_p)
+
+        LocalCI::Helper.logger
+      end
+
+      context "with LOCAL_CI_LOG_FILE set" do
+        before do
+          allow(ENV).to receive(:fetch).with("LOCAL_CI_LOG_FILE", $stdout).and_return("some/directory/for/logs/log file")
+        end
+
+        it "ensures the folder exists" do
+          expect(FileUtils).to receive(:mkdir_p).with("some/directory/for/logs")
+
+          LocalCI::Helper.logger
+        end
+
+        it "returns the env variable value" do
+          expect(Logger).to receive(:new).with("some/directory/for/logs/log file")
+
+          LocalCI::Helper.logger
+        end
+      end
+    end
+
+    context "in the local environment" do
+      before do
+        allow(LocalCI::Helper).to receive(:ci?).and_return(false)
+      end
+
+      it "ensures the folder exists" do
+        expect(FileUtils).to receive(:mkdir_p).with("logs")
+
+        LocalCI::Helper.logger
+      end
+
+      it "uses logs/local_ci.log" do
+        expect(Logger).to receive(:new).with("logs/local_ci.log")
+
+        LocalCI::Helper.logger
+      end
+
+      context "with LOCAL_CI_LOG_FILE set" do
+        before do
+          allow(ENV).to receive(:fetch).with("LOCAL_CI_LOG_FILE", "logs/local_ci.log").and_return("log file")
+        end
+
+        it "ensures the folder exists" do
+          expect(FileUtils).to receive(:mkdir_p).with(".")
+
+          LocalCI::Helper.logger
+        end
+
+        it "returns the env variable value" do
+          expect(Logger).to receive(:new).with("log file")
+
+          LocalCI::Helper.logger
+        end
+      end
+
+      context "with LOCAL_CI_LOG_TO_STDOUT" do
+        before do
+          allow(ENV).to receive(:has_key?).with("LOCAL_CI_LOG_TO_STDOUT").and_return(true)
+        end
+
+        it "uses $stdout" do
+          expect(Logger).to receive(:new).with($stdout)
+
+          LocalCI::Helper.logger
+        end
+
+        it "does not ensure the folder exists" do
+          expect(FileUtils).not_to receive(:mkdir_p)
+
+          LocalCI::Helper.logger
+        end
+      end
     end
   end
 

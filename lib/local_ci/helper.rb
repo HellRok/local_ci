@@ -9,7 +9,18 @@ module LocalCI
     end
 
     def self.runner
-      @runner ||= TTY::Command.new(color: color?, output: Logger.new("ci.log"))
+      @runner ||= TTY::Command.new(color: color?, output: logger)
+    end
+
+    def self.logger
+      return Logger.new($stdout) if ENV.has_key?("LOCAL_CI_LOG_TO_STDOUT")
+
+      log_file = ci? ? $stdout : "logs/local_ci.log"
+      log_file = ENV.fetch("LOCAL_CI_LOG_FILE", log_file)
+
+      FileUtils.mkdir_p(File.dirname(log_file)) unless log_file == $stdout
+
+      Logger.new(log_file)
     end
 
     def self.taskize(heading)

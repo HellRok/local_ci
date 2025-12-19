@@ -10,6 +10,7 @@ Gem::Specification.new do |s|
   s.homepage = "https://github.com/HellRok/local_ci"
   s.license = "MIT"
 
+  s.add_dependency "fileutils"
   s.add_dependency "logger"
   s.add_dependency "pastel"
   s.add_dependency "rake"
