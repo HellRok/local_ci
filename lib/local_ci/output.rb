@@ -40,6 +40,18 @@ module LocalCI
       $stdout.isatty
     end
 
+    def style
+      result = LocalCI::Helper.ci? ? "plain" : "realtime"
+      result = "plain" unless tty?
+      result = ENV.fetch("LOCAL_CI_STYLE", result)
+
+      unless ["plain", "json", "realtime"].include? result
+        raise ArgumentError, "LOCAL_CI_STYLE must be one of plain, json, or realtime"
+      end
+
+      result
+    end
+
     def passed?
       @flow.jobs.all?(&:success?)
     end
@@ -53,16 +65,23 @@ module LocalCI
     end
 
     def update(job)
-      if tty?
+      case style
+      when "realtime"
         finish and return if done?
 
         return if @thread&.alive?
 
         start_thread
-      else
+
+      when "json"
         @job = job
 
         @mutex.synchronize { json_output }
+
+      when "plain"
+        @job = job
+
+        @mutex.synchronize { plain_output }
       end
     end
 
@@ -153,6 +172,17 @@ module LocalCI
         duration: @job.duration,
         state: @job.state
       }.to_json)
+    end
+
+    def plain_output
+      result = "=== #{@flow.heading} - #{@job.name} [#{@job.state}] "
+      result << if @job.waiting? || @job.running?
+        "==="
+      else
+        "(#{LocalCI::Helper.human_duration(@job.duration)}) ==="
+      end
+
+      puts(result)
     end
   end
 end

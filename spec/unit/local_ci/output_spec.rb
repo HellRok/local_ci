@@ -15,11 +15,12 @@ describe LocalCI::Output do
     before do
       allow(@output).to receive(:output)
       allow(@output).to receive(:json_output)
+      allow(@output).to receive(:plain_output)
     end
 
-    context "when we are not in a TTY" do
+    context "when style is json" do
       before do
-        expect(@output).to receive(:tty?).and_return(false)
+        allow(@output).to receive(:style).and_return("json")
       end
 
       it "sets the job" do
@@ -33,9 +34,25 @@ describe LocalCI::Output do
       end
     end
 
-    context "when we are in a TTY" do
+    context "when style is plain" do
       before do
-        allow(@output).to receive(:tty?).and_return(true)
+        allow(@output).to receive(:style).and_return("plain")
+      end
+
+      it "sets the job" do
+        @output.update(@job)
+        expect(@output.job).to eq(@job)
+      end
+
+      it "calls plain_output" do
+        expect(@output).to receive(:plain_output)
+        @output.update(@job)
+      end
+    end
+
+    context "when the style is realtime" do
+      before do
+        allow(@output).to receive(:style).and_return("realtime")
       end
 
       context "when all jobs are done" do
@@ -369,7 +386,7 @@ describe LocalCI::Output do
   end
 
   describe "#json_output" do
-    it "returns the state as json" do
+    it "outputs the state as json" do
       allow(@flow).to receive(:heading).and_return("flow-heading")
       @output.instance_variable_set(:@job, double(
         :job,
@@ -386,6 +403,159 @@ describe LocalCI::Output do
       }.to_json)
 
       @output.json_output
+    end
+  end
+
+  describe "#plain_output" do
+    before do
+      allow(@flow).to receive(:heading).and_return("flow-heading")
+      @job = double(
+        :job,
+        name: "job-name",
+        duration: 1.3,
+        state: "job-state",
+        waiting?: false,
+        running?: false
+      )
+      @output.instance_variable_set(:@job, @job)
+    end
+
+    context "when the job is waiting" do
+      before do
+        allow(@job).to receive(:waiting?).and_return(true)
+        allow(@job).to receive(:state).and_return(:waiting)
+      end
+
+      it "outputs a plain string" do
+        expect(@output).to receive(:puts).with("=== flow-heading - job-name [waiting] ===")
+
+        @output.plain_output
+      end
+    end
+
+    context "when the job is starting" do
+      before do
+        allow(@job).to receive(:state).and_return(:running)
+        allow(@job).to receive(:running?).and_return(true)
+      end
+
+      it "outputs a plain string" do
+        expect(@output).to receive(:puts).with("=== flow-heading - job-name [running] ===")
+
+        @output.plain_output
+      end
+    end
+
+    context "when the job is successful" do
+      before do
+        allow(@job).to receive(:state).and_return(:success)
+      end
+
+      it "outputs a plain string" do
+        expect(@output).to receive(:puts).with("=== flow-heading - job-name [success] (1.30s) ===")
+
+        @output.plain_output
+      end
+    end
+
+    context "when the job fails" do
+      before do
+        allow(@job).to receive(:state).and_return(:failed)
+      end
+
+      it "outputs a plain string" do
+        expect(@output).to receive(:puts).with("=== flow-heading - job-name [failed] (1.30s) ===")
+
+        @output.plain_output
+      end
+    end
+  end
+
+  describe "#style" do
+    before do
+      allow(LocalCI::Helper).to receive(:ci?).and_return(false)
+      allow(@output).to receive(:tty?).and_return(true)
+    end
+
+    context "when LOCAL_CI_STYLE is plain" do
+      before do
+        allow(ENV).to receive(:fetch).with("LOCAL_CI_STYLE", "realtime").and_return("plain")
+      end
+
+      it "returns plain" do
+        expect(@output.style).to eq("plain")
+      end
+    end
+
+    context "when LOCAL_CI_STYLE is json" do
+      before do
+        allow(ENV).to receive(:fetch).with("LOCAL_CI_STYLE", "realtime").and_return("json")
+      end
+
+      it "returns json" do
+        expect(@output.style).to eq("json")
+      end
+    end
+
+    context "when LOCAL_CI_STYLE is realtime" do
+      before do
+        allow(ENV).to receive(:fetch).with("LOCAL_CI_STYLE", "realtime").and_return("realtime")
+      end
+
+      it "returns realtime" do
+        expect(@output.style).to eq("realtime")
+      end
+    end
+
+    context "when LOCAL_CI_STYLE is anything else" do
+      before do
+        allow(ENV).to receive(:fetch).with("LOCAL_CI_STYLE", "realtime").and_return("nonsense")
+      end
+
+      it "raises an error" do
+        expect { @output.style }.to raise_error(
+          ArgumentError,
+          "LOCAL_CI_STYLE must be one of plain, json, or realtime"
+        )
+      end
+    end
+
+    context "when LOCAL_CI_STYLE is not set" do
+      context "when running in CI" do
+        before do
+          allow(LocalCI::Helper).to receive(:ci?).and_return(true)
+          allow(ENV).to receive(:fetch).with("LOCAL_CI_STYLE", /.*/).and_return("plain")
+        end
+
+        it "returns plain" do
+          expect(ENV).to receive(:fetch).with("LOCAL_CI_STYLE", "plain")
+          expect(@output.style).to eq("plain")
+        end
+      end
+
+      context "when running locally" do
+        before do
+          allow(LocalCI::Helper).to receive(:ci?).and_return(false)
+          allow(ENV).to receive(:fetch).with("LOCAL_CI_STYLE", /.*/).and_return("realtime")
+        end
+
+        it "returns realtime" do
+          expect(ENV).to receive(:fetch).with("LOCAL_CI_STYLE", "realtime")
+          expect(@output.style).to eq("realtime")
+        end
+      end
+
+      context "when not in a tty" do
+        before do
+          allow(ENV).to receive(:fetch).with("LOCAL_CI_STYLE", /.*/).and_return("plain")
+          allow(@output).to receive(:tty?).and_return(false)
+        end
+
+        it "returns plain" do
+          expect(ENV).to receive(:fetch).with("LOCAL_CI_STYLE", "plain")
+          expect(@output.style).to eq("plain")
+        end
+      end
     end
   end
 end

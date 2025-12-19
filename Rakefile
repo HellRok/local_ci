@@ -23,6 +23,9 @@ end
 
 flow "Specs" do
   job "RSpec", "bundle exec rspec"
+  job "RSpec - plain", "LOCAL_CI_STYLE=plain bundle exec rspec"
+  job "RSpec - json", "LOCAL_CI_STYLE=json bundle exec rspec"
+  job "RSpec - realtime", "LOCAL_CI_STYLE=realtime bundle exec rspec"
 end
 
 flow "MRI Ruby" do
@@ -35,7 +38,10 @@ flow "MRI Ruby" do
           commands: [
             "bundle config set --local without development",
             "bundle install",
-            "bundle exec rspec --format documentation"
+            "bundle exec rspec",
+            "LOCAL_CI_STYLE=plain bundle exec rspec",
+            "LOCAL_CI_STYLE=json bundle exec rspec",
+            "LOCAL_CI_STYLE=realtime bundle exec rspec"
           ]
         )
       end
@@ -51,7 +57,10 @@ flow "JRuby" do
         commands: [
           "bundle config set --local without development",
           "bundle install",
-          "bundle exec rspec --format documentation"
+          "bundle exec rspec",
+          "LOCAL_CI_STYLE=plain bundle exec rspec",
+          "LOCAL_CI_STYLE=json bundle exec rspec",
+          "LOCAL_CI_STYLE=realtime bundle exec rspec"
         ]
       )
     end
