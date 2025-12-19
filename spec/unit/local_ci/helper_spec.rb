@@ -29,7 +29,7 @@ describe LocalCI::Helper do
     end
   end
 
-  describe "#human_duration" do
+  describe ".human_duration" do
     context "when less than 60 seconds" do
       it "shows seconds with two decimal places" do
         expect(LocalCI::Helper.human_duration(39.427)).to eq("39.43s")
@@ -50,6 +50,36 @@ describe LocalCI::Helper do
       it "shows the hours and minutes" do
         expect(LocalCI::Helper.human_duration(3790.1)).to eq("1h 3m")
       end
+    end
+  end
+
+  describe ".ci?" do
+    context "when the CI env variable is set" do
+      it "returns true" do
+        allow(ENV).to receive(:has_key?).with("CI").and_return(true)
+
+        expect(LocalCI::Helper.ci?).to be(true)
+      end
+    end
+
+    context "when the CI env variable is not set" do
+      it "returns false" do
+        allow(ENV).to receive(:has_key?).with("CI").and_return(false)
+
+        expect(LocalCI::Helper.ci?).to be(false)
+      end
+    end
+  end
+
+  describe ".local?" do
+    it "returns the inverse of ci?" do
+      allow(LocalCI::Helper).to receive(:ci?).and_return(true)
+
+      expect(LocalCI::Helper.local?).to be(false)
+
+      allow(LocalCI::Helper).to receive(:ci?).and_return(false)
+
+      expect(LocalCI::Helper.local?).to be(true)
     end
   end
 end

@@ -82,4 +82,20 @@ describe LocalCI::DSL do
       Support::DSLKlass.new.teardown("My Cool Teardown", parallel: "parallel", &@block)
     end
   end
+
+  describe ".ci?" do
+    it "calls LocalCI::Helper" do
+      expect(LocalCI::Helper).to receive(:ci?)
+
+      Support::DSLKlass.new.ci?
+    end
+  end
+
+  describe ".local?" do
+    it "calls LocalCI::Helper" do
+      expect(LocalCI::Helper).to receive(:local?)
+
+      Support::DSLKlass.new.local?
+    end
+  end
 end

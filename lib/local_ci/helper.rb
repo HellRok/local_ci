@@ -34,5 +34,13 @@ module LocalCI
         "%.2fs" % seconds
       end
     end
+
+    def self.ci?
+      ENV.has_key?("CI")
+    end
+
+    def self.local?
+      !ci?
+    end
   end
 end

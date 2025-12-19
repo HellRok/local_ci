@@ -26,5 +26,13 @@ module LocalCI
 
       LocalCI::Flow.new(name: name, heading: heading, parallel: parallel, block: block)
     end
+
+    def ci?
+      LocalCI::Helper.ci?
+    end
+
+    def local?
+      LocalCI::Helper.local?
+    end
   end
 end
