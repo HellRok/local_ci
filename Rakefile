@@ -50,19 +50,21 @@ flow "MRI Ruby" do
 end
 
 flow "JRuby" do
-  %w[10 9].each do |version|
-    job("[amd64] JRuby #{version}") do
-      run_on(
-        image: "jruby:#{version}",
-        commands: [
-          "bundle config set --local without development",
-          "bundle install",
-          "bundle exec rspec",
-          "LOCAL_CI_STYLE=plain bundle exec rspec",
-          "LOCAL_CI_STYLE=json bundle exec rspec",
-          "LOCAL_CI_STYLE=realtime bundle exec rspec"
-        ]
-      )
+  %w[linux/amd64 linux/arm64].each do |platform|
+    %w[10 9].each do |version|
+      job "[#{platform.split("/").last}] JRuby #{version}" do
+        run_on(
+          image: "jruby:#{version}",
+          commands: [
+            "bundle config set --local without development",
+            "bundle install",
+            "bundle exec rspec",
+            "LOCAL_CI_STYLE=plain bundle exec rspec",
+            "LOCAL_CI_STYLE=json bundle exec rspec",
+            "LOCAL_CI_STYLE=realtime bundle exec rspec"
+          ]
+        )
+      end
     end
   end
 end

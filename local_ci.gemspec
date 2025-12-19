@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
   s.description = "A way to run CI locally but also able to run easily on your hosted CI"
   s.authors = ["Sean Earle"]
   s.email = "sean.r.earle@gmail.com"
-  s.files = `git ls-files`.split($\)
+  s.files = Dir.glob("lib/**/*.rb")
   s.executables = []
   s.homepage = "https://github.com/HellRok/local_ci"
   s.license = "MIT"
