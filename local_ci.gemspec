@@ -11,10 +11,12 @@ Gem::Specification.new do |s|
   s.license = "MIT"
 
   s.add_dependency "fileutils"
+  s.add_dependency "json"
   s.add_dependency "logger"
   s.add_dependency "pastel"
   s.add_dependency "rake"
   s.add_dependency "tty-command"
   s.add_dependency "tty-cursor"
   s.add_dependency "tty-screen"
+  s.add_dependency "yaml"
 end
