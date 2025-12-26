@@ -42,10 +42,7 @@ end
             "bundle config set path /gems/#{platform}/#{version}/",
             "bundle config set without development",
             "bundle install",
-            "bundle exec rspec",
-            "LOCAL_CI_STYLE=plain bundle exec rspec",
-            "LOCAL_CI_STYLE=json bundle exec rspec",
-            "LOCAL_CI_STYLE=realtime bundle exec rspec"
+            "bundle exec rspec"
           ]
         )
       end
@@ -64,10 +61,7 @@ end
             "bundle config set path /gems/#{platform}/#{version}/",
             "bundle config set without development",
             "bundle install",
-            "bundle exec rspec",
-            "LOCAL_CI_STYLE=plain bundle exec rspec",
-            "LOCAL_CI_STYLE=json bundle exec rspec",
-            "LOCAL_CI_STYLE=realtime bundle exec rspec"
+            "bundle exec rspec"
           ]
         )
       end
