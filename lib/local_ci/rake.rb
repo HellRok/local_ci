@@ -13,7 +13,6 @@ module LocalCI
       end
 
       LocalCI::Task["ci:generate:buildkite", "Prints the contents of a Buildkite pipeline.yml the CI suite"] do
-        puts "hello"
         LocalCI::Generator::Buildkite.pipeline
       end
     end
