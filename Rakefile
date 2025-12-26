@@ -5,9 +5,12 @@ LocalCI::Rake.setup(self)
 
 def run_on(commands:, image:, platform: "linux/amd64")
   run "docker run " \
+    "--rm " \
     "--tty " \
+    "--pull always " \
     "--workdir /app " \
     "--mount type=bind,source=.,target=/app " \
+    "--mount type=volume,source=local_ci_specs_gems,target=/gems/ " \
     "--platform #{platform} " \
     "#{image} " \
     "bash -c \"#{commands.join(" && ")}\""
@@ -28,15 +31,16 @@ flow "Specs" do
   job "RSpec - realtime", "LOCAL_CI_STYLE=realtime bundle exec rspec"
 end
 
-flow "MRI Ruby" do
-  %w[linux/amd64 linux/arm64].each do |platform|
+%w[linux/386 linux/amd64 linux/arm/v7 linux/arm64].each do |platform|
+  flow "#{platform.split("/", 2).last}: MRI Ruby" do
     %w[4.0-rc 3.4 3.3 3.2 3.1 3.0 2.7].each do |version|
-      job "[#{platform.split("/").last}] Ruby #{version}" do
+      job "Ruby #{version}" do
         run_on(
           image: "ruby:#{version}",
           platform: platform,
           commands: [
-            "bundle config set --local without development",
+            "bundle config set path /gems/#{platform}/#{version}/",
+            "bundle config set without development",
             "bundle install",
             "bundle exec rspec",
             "LOCAL_CI_STYLE=plain bundle exec rspec",
@@ -49,14 +53,16 @@ flow "MRI Ruby" do
   end
 end
 
-flow "JRuby" do
-  %w[linux/amd64 linux/arm64].each do |platform|
+%w[linux/amd64 linux/arm64].each do |platform|
+  flow "#{platform.split("/", 2).last}: JRuby" do
     %w[10 9].each do |version|
-      job "[#{platform.split("/").last}] JRuby #{version}" do
+      job "JRuby #{version}" do
         run_on(
           image: "jruby:#{version}",
+          platform: platform,
           commands: [
-            "bundle config set --local without development",
+            "bundle config set path /gems/#{platform}/#{version}/",
+            "bundle config set without development",
             "bundle install",
             "bundle exec rspec",
             "LOCAL_CI_STYLE=plain bundle exec rspec",
