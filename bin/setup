@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "=== Setting up git hooks ==="
+git config core.hooksPath ./.git-hooks
+
+echo "=== Install Gems ==="
+bundle check &> /dev/null || bundle install
