@@ -6,6 +6,12 @@ require "local_ci"
 require "support/dsl_klass"
 
 RSpec.configure do |config|
+  config.before(:example) do
+    ::LocalCI::Task["ci"]
+    ::LocalCI::Task["ci:setup"]
+    ::LocalCI::Task["ci:teardown"]
+  end
+
   config.after(:example) do
     Rake::Task.clear
 

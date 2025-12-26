@@ -46,13 +46,10 @@ describe LocalCI::Flow do
           block: -> {}
         )
 
-        expect(Rake::Task.task_defined?("ci")).to be(true)
-        expect(Rake::Task.task_defined?("ci:setup")).to be(true)
         expect(Rake::Task.task_defined?("ci:actions")).to be(true)
         expect(Rake::Task.task_defined?("ci:actions:setup")).to be(true)
         expect(Rake::Task.task_defined?("ci:actions:jobs")).to be(true)
         expect(Rake::Task.task_defined?("ci:actions:teardown")).to be(true)
-        expect(Rake::Task.task_defined?("ci:teardown")).to be(true)
       end
 
       it "registers itself" do
@@ -78,13 +75,10 @@ describe LocalCI::Flow do
           block: -> {}
         )
 
-        expect(Rake::Task.task_defined?("ci")).to be(true)
-        expect(Rake::Task.task_defined?("ci:setup")).to be(true)
         expect(Rake::Task.task_defined?("ci:actionless")).to be(true)
         expect(Rake::Task.task_defined?("ci:actionless:setup")).to be(false)
         expect(Rake::Task.task_defined?("ci:actionless:jobs")).to be(true)
         expect(Rake::Task.task_defined?("ci:actionless:teardown")).to be(false)
-        expect(Rake::Task.task_defined?("ci:teardown")).to be(true)
       end
 
       it "does not register itself" do
@@ -108,9 +102,6 @@ describe LocalCI::Flow do
         block: -> {}
       )
 
-      expect(Rake::Task["ci"].comment).to eq("Run the CI suite")
-      expect(Rake::Task["ci:setup"].comment).to eq("Setup the system to run CI")
-      expect(Rake::Task["ci:teardown"].comment).to eq("Cleanup after the CI")
       expect(Rake::Task["ci:test"].comment).to eq("heading")
     end
 

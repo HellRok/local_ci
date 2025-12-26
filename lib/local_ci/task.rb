@@ -2,8 +2,10 @@ module LocalCI
   class Task
     extend Forwardable
 
-    def self.[](task, comment = nil)
-      new(task, comment: comment)
+    def self.[](task, comment = nil, &block)
+      new_task = new(task, comment: comment)
+      new_task.define(&block) if block_given?
+      new_task
     end
 
     attr_accessor :task

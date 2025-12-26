@@ -60,13 +60,45 @@ describe LocalCI::Task do
   end
 
   describe ".[]" do
-    it "creates a LocalCI::Task" do
-      expect(LocalCI::Task).to receive(:new).with(
-        "task",
-        comment: "comment"
-      )
+    context "given a block" do
+      before do
+        @block = -> { puts :hi }
+      end
 
-      LocalCI::Task["task", "comment"]
+      it "creates a LocalCI::Task" do
+        LocalCI::Task["task", "comment", &@block]
+
+        expect(Rake::Task.task_defined?("task")).to be(true)
+      end
+
+      it "defines the task" do
+        task = double(:task)
+        allow(LocalCI::Task).to receive(:new).and_return(task)
+        expect(task).to receive(:define) do |&block|
+          expect(block).to eq(@block)
+        end
+
+        LocalCI::Task["task", "comment", &@block]
+      end
+    end
+
+    context "not given a block" do
+      it "creates a LocalCI::Task" do
+        expect(LocalCI::Task).to receive(:new).with(
+          "task",
+          comment: "comment"
+        )
+
+        LocalCI::Task["task", "comment"]
+      end
+
+      it "does not define the task" do
+        task = double(:task)
+        allow(LocalCI::Task).to receive(:new).and_return(task)
+        expect(task).not_to receive(:define)
+
+        LocalCI::Task["task", "comment"]
+      end
     end
   end
 

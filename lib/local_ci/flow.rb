@@ -34,21 +34,20 @@ module LocalCI
     end
 
     def isolated?
-      LocalCI::Task["ci"].already_invoked
+      !LocalCI::Task["ci"].already_invoked
+    end
+
+    def raise_failures
+      LocalCI::Task["ci:teardown"].invoke
+      output.failures
+
+      abort LocalCI::Helper.pastel.red("#{@heading} failed, see ci.log for more.")
     end
 
     private
 
     def setup_required_tasks
-      ci_task = LocalCI::Task["ci", "Run the CI suite"]
-
-      LocalCI::Task["ci:setup", "Setup the system to run CI"]
-      LocalCI::Task["ci:teardown", "Cleanup after the CI"]
-
-      ci_task.add_prerequisite "ci:setup"
-      ci_task.define do
-        LocalCI::Task["ci:teardown"].invoke
-      end
+      LocalCI::Task["ci"].add_prerequisite "ci:setup"
     end
 
     def setup_flow_tasks
@@ -80,14 +79,9 @@ module LocalCI
     def after_jobs
       LocalCI::Task[@task].define do
         LocalCI::Task["#{@task}:teardown"].invoke
-        LocalCI::Task["ci:teardown"].invoke unless isolated? || actionless?
+        LocalCI::Task["ci:teardown"].invoke unless !isolated? || actionless?
 
-        if @failures.any?
-          LocalCI::Task["ci:teardown"].invoke
-          output.failures
-
-          abort LocalCI::Helper.pastel.red("#{@heading} failed, see ci.log for more.")
-        end
+        raise_failures if @failures.any?
       end
     end
   end

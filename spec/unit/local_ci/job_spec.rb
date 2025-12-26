@@ -4,6 +4,7 @@ describe LocalCI::Job do
   before do
     @output = double(:output)
     allow(@output).to receive(:update)
+    allow(@output).to receive(:failures)
 
     @flow = LocalCI::Flow.new(
       name: "flow",
@@ -128,6 +129,8 @@ describe LocalCI::Job do
 
     context "when the job fails" do
       before do
+        allow(@flow).to receive(:abort)
+
         @job = LocalCI::Job.new(
           flow: @flow,
           name: "Raises an Error",
