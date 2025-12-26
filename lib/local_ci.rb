@@ -2,6 +2,7 @@ require "fileutils"
 require "forwardable"
 require "json"
 require "logger"
+require "yaml"
 
 require "tty-command"
 require "tty-cursor"
@@ -17,3 +18,13 @@ require "local_ci/job"
 require "local_ci/output"
 require "local_ci/rake"
 require "local_ci/task"
+
+require "local_ci/generator/buildkite"
+
+module LocalCI
+  @flows = []
+
+  def self.flows
+    @flows
+  end
+end

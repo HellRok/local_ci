@@ -11,5 +11,7 @@ RSpec.configure do |config|
 
     LocalCI::Helper.instance_variable_set(:@pastel, nil)
     LocalCI::Helper.instance_variable_set(:@runner, nil)
+
+    LocalCI.flows.clear
   end
 end

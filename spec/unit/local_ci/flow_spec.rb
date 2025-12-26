@@ -3,7 +3,7 @@ require "spec_helper"
 describe LocalCI::Flow do
   describe "#initialize" do
     context "when creating parallel" do
-      it "call Rake::MultiTask" do
+      it "calls Rake::MultiTask" do
         task = double(:task, prerequisites: [])
         allow(task).to receive(:comment=)
         allow(Rake::Task).to receive(:[]).and_return(task)
@@ -20,7 +20,7 @@ describe LocalCI::Flow do
     end
 
     context "when creating sequential" do
-      it "call Rake::Task" do
+      it "calls Rake::Task" do
         task = double(:task, prerequisites: [])
         expect(task).to receive(:comment=).at_least(:once)
         expect(Rake::Task).to receive(:[]).and_return(task).at_least(:once)
@@ -54,6 +54,18 @@ describe LocalCI::Flow do
         expect(Rake::Task.task_defined?("ci:actions:teardown")).to be(true)
         expect(Rake::Task.task_defined?("ci:teardown")).to be(true)
       end
+
+      it "registers itself" do
+        flow = LocalCI::Flow.new(
+          name: "actions",
+          heading: "heading",
+          parallel: true,
+          actions: true,
+          block: -> {}
+        )
+
+        expect(LocalCI.flows).to eq([flow])
+      end
     end
 
     context "when actions is false" do
@@ -73,6 +85,18 @@ describe LocalCI::Flow do
         expect(Rake::Task.task_defined?("ci:actionless:jobs")).to be(true)
         expect(Rake::Task.task_defined?("ci:actionless:teardown")).to be(false)
         expect(Rake::Task.task_defined?("ci:teardown")).to be(true)
+      end
+
+      it "does not register itself" do
+        LocalCI::Flow.new(
+          name: "actionless",
+          heading: "heading",
+          parallel: true,
+          actions: false,
+          block: -> {}
+        )
+
+        expect(LocalCI.flows).to eq([])
       end
     end
 

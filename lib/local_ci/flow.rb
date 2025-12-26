@@ -67,6 +67,8 @@ module LocalCI
       LocalCI::Task["#{@task}:jobs"].add_prerequisite "#{@task}:setup"
 
       LocalCI::Task["ci"].add_prerequisite @task
+
+      LocalCI.flows << self
     end
 
     def setup_actionless_flow_tasks
