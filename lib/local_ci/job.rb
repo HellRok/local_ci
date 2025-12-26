@@ -32,6 +32,8 @@ module LocalCI
           job: @name,
           message: e.message
         )
+
+        @flow.raise_failures if isolated?
       ensure
         @duration = duration
         @flow.output.update(self)
@@ -40,6 +42,10 @@ module LocalCI
       ::Rake::Task["#{@flow.task}:jobs"].prerequisites << task
 
       ::Rake::Task[task].prerequisites << "#{@flow.task}:setup" if @flow.actions?
+    end
+
+    def isolated?
+      !LocalCI::Task[@flow.task].already_invoked
     end
 
     def duration

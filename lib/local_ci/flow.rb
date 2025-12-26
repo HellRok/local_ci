@@ -34,7 +34,14 @@ module LocalCI
     end
 
     def isolated?
-      LocalCI::Task["ci"].already_invoked
+      !LocalCI::Task["ci"].already_invoked
+    end
+
+    def raise_failures
+      LocalCI::Task["ci:teardown"].invoke
+      output.failures
+
+      abort LocalCI::Helper.pastel.red("#{@heading} failed, see ci.log for more.")
     end
 
     private
@@ -80,14 +87,9 @@ module LocalCI
     def after_jobs
       LocalCI::Task[@task].define do
         LocalCI::Task["#{@task}:teardown"].invoke
-        LocalCI::Task["ci:teardown"].invoke unless isolated? || actionless?
+        LocalCI::Task["ci:teardown"].invoke unless !isolated? || actionless?
 
-        if @failures.any?
-          LocalCI::Task["ci:teardown"].invoke
-          output.failures
-
-          abort LocalCI::Helper.pastel.red("#{@heading} failed, see ci.log for more.")
-        end
+        raise_failures if @failures.any?
       end
     end
   end

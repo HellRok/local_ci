@@ -32,7 +32,7 @@ end
 
 # %w[linux/386 linux/amd64 linux/arm/v7 linux/arm64].each do |platform|
 #   flow "#{platform.split("/", 2).last}: MRI Ruby" do
-#     %w[4.0-rc 3.4 3.3 3.2 3.1 3.0 2.7].each do |version|
+#     %w[4.0 3.4 3.3 3.2 3.1 3.0 2.7].each do |version|
 #       job "Ruby #{version}" do
 #         run_on(
 #           image: "ruby:#{version}",
