@@ -46,8 +46,11 @@ end
   end
 end
 
+# This is parallel mostly to test that feature on CI platforms, but also
+# because JRuby is quite memory hungry. This limits how much can be used at
+# once.
 %w[linux/amd64 linux/arm64].each do |platform|
-  flow "#{platform.split("/", 2).last}: JRuby" do
+  flow "#{platform.split("/", 2).last}: JRuby", parallel: false do
     %w[10 9].each do |version|
       job "JRuby #{version}" do
         run_on(

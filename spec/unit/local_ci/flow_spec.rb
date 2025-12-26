@@ -237,4 +237,30 @@ describe LocalCI::Flow do
       end
     end
   end
+
+  describe "#setup_task" do
+    it "returns the task with :setup" do
+      flow = LocalCI::Flow.new(
+        name: "flow-name",
+        heading: "heading",
+        parallel: true,
+        block: -> {}
+      )
+
+      expect(flow.setup_task).to eq("ci:flow-name:setup")
+    end
+  end
+
+  describe "#teardown_task" do
+    it "returns the task with :teardown" do
+      flow = LocalCI::Flow.new(
+        name: "flow-name",
+        heading: "heading",
+        parallel: true,
+        block: -> {}
+      )
+
+      expect(flow.teardown_task).to eq("ci:flow-name:teardown")
+    end
+  end
 end

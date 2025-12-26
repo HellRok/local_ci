@@ -33,6 +33,10 @@ module LocalCI
       !actions?
     end
 
+    def parallel?
+      @parallel
+    end
+
     def isolated?
       !LocalCI::Task["ci"].already_invoked
     end
@@ -44,6 +48,14 @@ module LocalCI
       abort LocalCI::Helper.pastel.red("#{@heading} failed, see ci.log for more.")
     end
 
+    def setup_task
+      "#{@task}:setup"
+    end
+
+    def teardown_task
+      "#{@task}:teardown"
+    end
+
     private
 
     def setup_required_tasks
@@ -51,19 +63,19 @@ module LocalCI
     end
 
     def setup_flow_tasks
-      LocalCI::Task["#{@task}:setup"]
+      LocalCI::Task[setup_task]
 
       LocalCI::Task.new("#{@task}:jobs", parallel_prerequisites: @parallel)
 
-      LocalCI::Task["#{@task}:teardown"]
+      LocalCI::Task[teardown_task]
       LocalCI::Task[@task, @heading]
 
-      LocalCI::Task["#{@task}:setup"]
-      LocalCI::Task["#{@task}:setup"].add_prerequisite "ci:setup"
+      LocalCI::Task[setup_task]
+      LocalCI::Task[setup_task].add_prerequisite "ci:setup"
 
-      LocalCI::Task[@task].add_prerequisite "#{@task}:teardown"
-      LocalCI::Task["#{@task}:teardown"].add_prerequisite "#{@task}:jobs"
-      LocalCI::Task["#{@task}:jobs"].add_prerequisite "#{@task}:setup"
+      LocalCI::Task[@task].add_prerequisite teardown_task
+      LocalCI::Task[teardown_task].add_prerequisite "#{@task}:jobs"
+      LocalCI::Task["#{@task}:jobs"].add_prerequisite setup_task
 
       LocalCI::Task["ci"].add_prerequisite @task
 
@@ -78,7 +90,7 @@ module LocalCI
 
     def after_jobs
       LocalCI::Task[@task].define do
-        LocalCI::Task["#{@task}:teardown"].invoke
+        LocalCI::Task[teardown_task].invoke
         LocalCI::Task["ci:teardown"].invoke unless !isolated? || actionless?
 
         raise_failures if @failures.any?

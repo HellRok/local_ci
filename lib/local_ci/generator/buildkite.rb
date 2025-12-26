@@ -8,19 +8,28 @@ module LocalCI
       def self.steps
         {
           "steps" => LocalCI.flows.flat_map do |flow|
-            step = {
-              "group" => flow.heading,
-              "steps" => []
-            }
+            step = {}
 
-            flow.jobs.each do |job|
-              step["steps"] << {
-                "label" => job.name,
-                "commands" => [
-                  "bundle check &> /dev/null || bundle install",
-                  "bundle exec rake #{job.task} ci:teardown"
-                ]
-              }
+            if flow.parallel?
+              step["group"] = flow.heading
+              step["steps"] = []
+
+              flow.jobs.each do |job|
+                step["steps"] << {
+                  "label" => job.name,
+                  "commands" => [
+                    "bundle check &> /dev/null || bundle install",
+                    "bundle exec rake #{job.task} #{flow.teardown_task} ci:teardown"
+                  ]
+                }
+              end
+
+            else
+              step["label"] = flow.heading
+              step["commands"] = [
+                "bundle check &> /dev/null || bundle install",
+                "bundle exec rake #{flow.task}"
+              ]
             end
 
             [step, "wait"]

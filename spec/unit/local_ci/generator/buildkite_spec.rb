@@ -6,72 +6,80 @@ describe LocalCI::Generator::Buildkite do
       allow(LocalCI).to receive(:flows).and_return([
         double(
           :flow_1,
+          parallel?: true,
           heading: "Flow Heading 1",
+          teardown_task: "ci:flow-1:teardown",
           jobs: [
             double(
               :job_1,
               name: "Flow 1 Job 1",
-              task: "flow-1-job-1-task"
+              task: "ci:flow-1-job-1-task"
+            ),
+            double(
+              :job_1,
+              name: "Flow 1 Job 2",
+              task: "ci:flow-1-job-2-task"
             )
           ]
         ),
         double(
           :flow_2,
+          parallel?: false,
           heading: "Flow Heading 2",
+          task: "ci:flow-2",
+          teardown_task: "ci:flow-2:teardown",
           jobs: [
             double(
               :job_2,
-              name: "Flow 2 Job 2",
-              task: "flow-2-job-2-task"
+              name: "Flow 2 Job 1"
             ),
             double(
               :job_3,
-              name: "Flow 2 Job 3",
-              task: "flow-2-job-3-task"
+              name: "Flow 2 Job 2"
             )
           ]
         )
       ])
 
-      expect(LocalCI::Generator::Buildkite.steps).to eq(
+      pipeline = LocalCI::Generator::Buildkite.steps
+      expect(pipeline.has_key?("steps")).to be(true)
+
+      steps = pipeline["steps"]
+
+      expect(steps.size).to eq(4)
+
+      flow_1 = steps[0]
+      expect(flow_1["group"]).to eq("Flow Heading 1")
+      expect(flow_1["steps"].size).to eq(2)
+      expect(flow_1["steps"][0]).to eq(
         {
-          "steps" => [
-            {
-              "group" => "Flow Heading 1",
-              "steps" => [
-                {
-                  "label" => "Flow 1 Job 1",
-                  "commands" => [
-                    "bundle check &> /dev/null || bundle install",
-                    "bundle exec rake flow-1-job-1-task ci:teardown"
-                  ]
-                }
-              ]
-            },
-            "wait",
-            {
-              "group" => "Flow Heading 2",
-              "steps" => [
-                {
-                  "label" => "Flow 2 Job 2",
-                  "commands" => [
-                    "bundle check &> /dev/null || bundle install",
-                    "bundle exec rake flow-2-job-2-task ci:teardown"
-                  ]
-                },
-                {
-                  "label" => "Flow 2 Job 3",
-                  "commands" => [
-                    "bundle check &> /dev/null || bundle install",
-                    "bundle exec rake flow-2-job-3-task ci:teardown"
-                  ]
-                }
-              ]
-            },
-            "wait"
+          "label" => "Flow 1 Job 1",
+          "commands" => [
+            "bundle check &> /dev/null || bundle install",
+            "bundle exec rake ci:flow-1-job-1-task ci:flow-1:teardown ci:teardown"
           ]
         }
       )
+      expect(flow_1["steps"][1]).to eq(
+        {
+          "label" => "Flow 1 Job 2",
+          "commands" => [
+            "bundle check &> /dev/null || bundle install",
+            "bundle exec rake ci:flow-1-job-2-task ci:flow-1:teardown ci:teardown"
+          ]
+        }
+      )
+      expect(steps[1]).to eq("wait")
+
+      flow_2 = steps[2]
+      expect(flow_2["label"]).to eq("Flow Heading 2")
+      expect(flow_2["commands"]).to eq(
+        [
+          "bundle check &> /dev/null || bundle install",
+          "bundle exec rake ci:flow-2"
+        ]
+      )
+      expect(steps[3]).to eq("wait")
     end
   end
 
