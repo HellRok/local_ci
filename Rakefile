@@ -9,6 +9,8 @@ def run_on(commands:, image:, platform: "linux/amd64")
     "--tty " \
     "--pull always " \
     "--workdir /app " \
+    "--env BUNDLE_PATH=/gems/#{image.tr(":", "_")}/#{platform} " \
+    "--env BUNDLE_WITHOUT=development " \
     "--mount type=bind,source=.,target=/app " \
     "--mount type=volume,source=local_ci_specs_gems,target=/gems/ " \
     "--platform #{platform} " \
@@ -39,9 +41,7 @@ end
           image: "ruby:#{version}",
           platform: platform,
           commands: [
-            "bundle config set path /gems/#{platform}/#{version}/",
-            "bundle config set without development",
-            "bundle install",
+            "bundle check &> /dev/null || bundle install",
             "bundle exec rspec"
           ]
         )
@@ -58,9 +58,7 @@ end
           image: "jruby:#{version}",
           platform: platform,
           commands: [
-            "bundle config set path /gems/#{platform}/#{version}/",
-            "bundle config set without development",
-            "bundle install",
+            "bundle check &> /dev/null || bundle install",
             "bundle exec rspec"
           ]
         )
