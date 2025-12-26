@@ -11,7 +11,10 @@ module LocalCI
           flow.jobs.each do |job|
             step["steps"] << {
               "label" => job.name,
-              "commands" => "bundle exec rake #{job.task} ci:teardown"
+              "commands" => [
+                "bundle check &> /dev/null || bundle install",
+                "bundle exec rake #{job.task} ci:teardown"
+              ]
             }
           end
 

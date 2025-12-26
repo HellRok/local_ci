@@ -18,10 +18,6 @@ def run_on(commands:, image:, platform: "linux/amd64")
     "bash -c \"#{commands.join(" && ")}\""
 end
 
-setup do
-  job "Bundle", "bundle check || bundle install"
-end
-
 flow "Linting" do
   job "StandardRB", "bundle exec rake standard"
 end
