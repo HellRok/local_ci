@@ -62,7 +62,3 @@ end
     end
   end
 end
-
-task "ci:buildkite" do
-  LocalCI::Generator::Buildkite.output
-end
