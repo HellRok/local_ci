@@ -100,6 +100,7 @@ module LocalCI
     end
 
     def draw(final: false)
+      print cursor.hide
       if @first_paint
         @start = Time.now
         @first_paint = false
@@ -112,6 +113,8 @@ module LocalCI
       puts footer_line
 
       puts if final
+    ensure
+      print cursor.show
     end
 
     def color(message)

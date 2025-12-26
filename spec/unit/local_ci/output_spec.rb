@@ -172,6 +172,8 @@ describe LocalCI::Output do
 
         allow(TTY::Cursor).to receive(:clear_line).and_return("")
         allow(TTY::Cursor).to receive(:up).and_return("")
+        allow(TTY::Cursor).to receive(:hide).and_return("")
+        allow(TTY::Cursor).to receive(:show).and_return("")
         allow(@output).to receive(:print)
       end
 
@@ -207,6 +209,18 @@ describe LocalCI::Output do
       expect(@output).to receive(:footer_line).and_return("footer-line")
 
       expect(@output).to receive(:puts).with("footer-line")
+
+      @output.draw
+    end
+
+    it "hides the cursor" do
+      expect(TTY::Cursor).to receive(:hide)
+
+      @output.draw
+    end
+
+    it "shows the cursor" do
+      expect(TTY::Cursor).to receive(:show)
 
       @output.draw
     end
