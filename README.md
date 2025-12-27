@@ -70,7 +70,6 @@ steps:
   - label: ":pipeline: Pipeline upload"
     commands:
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:generate:buildkite
       - bundle exec rake ci:generate:buildkite | buildkite-agent pipeline upload
 ```
 
