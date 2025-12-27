@@ -15,6 +15,10 @@ module LocalCI
       LocalCI::Task["ci:generate:buildkite", "Prints the contents of a Buildkite pipeline.yml the CI suite"] do
         LocalCI::Generator::Buildkite.pipeline
       end
+
+      LocalCI::Task["ci:generate:semaphore_ci", "Writes a .semaphore/semaphore.yml file for the CI suite"] do
+        LocalCI::Generator::SemaphoreCI.pipeline
+      end
     end
   end
 end

@@ -26,8 +26,12 @@ describe LocalCI::Rake do
 
     it "sets up the CI generators" do
       LocalCI::Rake.setup(@klass)
+
       expect(::Rake::Task.task_defined?("ci:generate:buildkite")).to be(true)
       expect(::Rake::Task["ci:generate:buildkite"].comment).to eq("Prints the contents of a Buildkite pipeline.yml the CI suite")
+
+      expect(::Rake::Task.task_defined?("ci:generate:semaphore_ci")).to be(true)
+      expect(::Rake::Task["ci:generate:semaphore_ci"].comment).to eq("Writes a .semaphore/semaphore.yml file for the CI suite")
     end
 
     it "sets up the prerequisites" do

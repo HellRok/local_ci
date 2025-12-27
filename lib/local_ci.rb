@@ -20,6 +20,7 @@ require "local_ci/rake"
 require "local_ci/task"
 
 require "local_ci/generator/buildkite"
+require "local_ci/generator/semaphore_ci"
 
 module LocalCI
   @flows = []

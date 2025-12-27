@@ -16,7 +16,7 @@ describe LocalCI::Generator::Buildkite do
               task: "ci:flow-1-job-1-task"
             ),
             double(
-              :job_1,
+              :job_2,
               name: "Flow 1 Job 2",
               task: "ci:flow-1-job-2-task"
             )
@@ -30,11 +30,11 @@ describe LocalCI::Generator::Buildkite do
           teardown_task: "ci:flow-2:teardown",
           jobs: [
             double(
-              :job_2,
+              :job_3,
               name: "Flow 2 Job 1"
             ),
             double(
-              :job_3,
+              :job_4,
               name: "Flow 2 Job 2"
             )
           ]
@@ -42,8 +42,6 @@ describe LocalCI::Generator::Buildkite do
       ])
 
       pipeline = LocalCI::Generator::Buildkite.steps
-      expect(pipeline.has_key?("steps")).to be(true)
-
       steps = pipeline["steps"]
 
       expect(steps.size).to eq(4)

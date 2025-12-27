@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-bundle exec rake ci:specs
+bundle exec rake ci:specs pre-push:semaphore:check

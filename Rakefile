@@ -65,3 +65,12 @@ end
     end
   end
 end
+
+task "pre-push:semaphore:check" => "ci:generate:semaphore_ci"
+task "pre-push:semaphore:check" do
+  puts "=== Checking there would be no changes to `.semaphore/semaphore.yml` ==="
+  sh "git diff -s --exit-code .semaphore/semaphore.yml"
+  puts "[✓] No changes"
+rescue RuntimeError
+  puts "[x] Changes detected, check `git diff`"
+end
