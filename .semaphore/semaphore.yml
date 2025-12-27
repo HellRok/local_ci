@@ -13,7 +13,7 @@ blocks:
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:linting:jobs:standardrb ci:linting:teardown ci:teardown
+      - bundle exec rake ci:linting:jobs:standardrb
 - name: Specs
   task:
     jobs:
@@ -21,22 +21,22 @@ blocks:
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:specs:jobs:rspec ci:specs:teardown ci:teardown
+      - bundle exec rake ci:specs:jobs:rspec
     - name: RSpec - plain
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:specs:jobs:rspec__plain ci:specs:teardown ci:teardown
+      - bundle exec rake ci:specs:jobs:rspec__plain
     - name: RSpec - json
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:specs:jobs:rspec__json ci:specs:teardown ci:teardown
+      - bundle exec rake ci:specs:jobs:rspec__json
     - name: RSpec - realtime
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:specs:jobs:rspec__realtime ci:specs:teardown ci:teardown
+      - bundle exec rake ci:specs:jobs:rspec__realtime
 - name: '386: MRI Ruby'
   task:
     jobs:
@@ -44,37 +44,37 @@ blocks:
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:386_mri_ruby:jobs:ruby_40 ci:386_mri_ruby:teardown ci:teardown
+      - bundle exec rake ci:386_mri_ruby:jobs:ruby_40
     - name: Ruby 3.4
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:386_mri_ruby:jobs:ruby_34 ci:386_mri_ruby:teardown ci:teardown
+      - bundle exec rake ci:386_mri_ruby:jobs:ruby_34
     - name: Ruby 3.3
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:386_mri_ruby:jobs:ruby_33 ci:386_mri_ruby:teardown ci:teardown
+      - bundle exec rake ci:386_mri_ruby:jobs:ruby_33
     - name: Ruby 3.2
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:386_mri_ruby:jobs:ruby_32 ci:386_mri_ruby:teardown ci:teardown
+      - bundle exec rake ci:386_mri_ruby:jobs:ruby_32
     - name: Ruby 3.1
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:386_mri_ruby:jobs:ruby_31 ci:386_mri_ruby:teardown ci:teardown
+      - bundle exec rake ci:386_mri_ruby:jobs:ruby_31
     - name: Ruby 3.0
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:386_mri_ruby:jobs:ruby_30 ci:386_mri_ruby:teardown ci:teardown
+      - bundle exec rake ci:386_mri_ruby:jobs:ruby_30
     - name: Ruby 2.7
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:386_mri_ruby:jobs:ruby_27 ci:386_mri_ruby:teardown ci:teardown
+      - bundle exec rake ci:386_mri_ruby:jobs:ruby_27
 - name: 'amd64: MRI Ruby'
   task:
     jobs:
@@ -82,44 +82,37 @@ blocks:
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:amd64_mri_ruby:jobs:ruby_40 ci:amd64_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:amd64_mri_ruby:jobs:ruby_40
     - name: Ruby 3.4
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:amd64_mri_ruby:jobs:ruby_34 ci:amd64_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:amd64_mri_ruby:jobs:ruby_34
     - name: Ruby 3.3
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:amd64_mri_ruby:jobs:ruby_33 ci:amd64_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:amd64_mri_ruby:jobs:ruby_33
     - name: Ruby 3.2
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:amd64_mri_ruby:jobs:ruby_32 ci:amd64_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:amd64_mri_ruby:jobs:ruby_32
     - name: Ruby 3.1
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:amd64_mri_ruby:jobs:ruby_31 ci:amd64_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:amd64_mri_ruby:jobs:ruby_31
     - name: Ruby 3.0
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:amd64_mri_ruby:jobs:ruby_30 ci:amd64_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:amd64_mri_ruby:jobs:ruby_30
     - name: Ruby 2.7
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:amd64_mri_ruby:jobs:ruby_27 ci:amd64_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:amd64_mri_ruby:jobs:ruby_27
 - name: 'arm/v7: MRI Ruby'
   task:
     jobs:
@@ -127,44 +120,37 @@ blocks:
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:armv7_mri_ruby:jobs:ruby_40 ci:armv7_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:armv7_mri_ruby:jobs:ruby_40
     - name: Ruby 3.4
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:armv7_mri_ruby:jobs:ruby_34 ci:armv7_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:armv7_mri_ruby:jobs:ruby_34
     - name: Ruby 3.3
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:armv7_mri_ruby:jobs:ruby_33 ci:armv7_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:armv7_mri_ruby:jobs:ruby_33
     - name: Ruby 3.2
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:armv7_mri_ruby:jobs:ruby_32 ci:armv7_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:armv7_mri_ruby:jobs:ruby_32
     - name: Ruby 3.1
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:armv7_mri_ruby:jobs:ruby_31 ci:armv7_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:armv7_mri_ruby:jobs:ruby_31
     - name: Ruby 3.0
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:armv7_mri_ruby:jobs:ruby_30 ci:armv7_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:armv7_mri_ruby:jobs:ruby_30
     - name: Ruby 2.7
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:armv7_mri_ruby:jobs:ruby_27 ci:armv7_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:armv7_mri_ruby:jobs:ruby_27
 - name: 'arm64: MRI Ruby'
   task:
     jobs:
@@ -172,44 +158,37 @@ blocks:
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:arm64_mri_ruby:jobs:ruby_40 ci:arm64_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:arm64_mri_ruby:jobs:ruby_40
     - name: Ruby 3.4
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:arm64_mri_ruby:jobs:ruby_34 ci:arm64_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:arm64_mri_ruby:jobs:ruby_34
     - name: Ruby 3.3
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:arm64_mri_ruby:jobs:ruby_33 ci:arm64_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:arm64_mri_ruby:jobs:ruby_33
     - name: Ruby 3.2
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:arm64_mri_ruby:jobs:ruby_32 ci:arm64_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:arm64_mri_ruby:jobs:ruby_32
     - name: Ruby 3.1
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:arm64_mri_ruby:jobs:ruby_31 ci:arm64_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:arm64_mri_ruby:jobs:ruby_31
     - name: Ruby 3.0
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:arm64_mri_ruby:jobs:ruby_30 ci:arm64_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:arm64_mri_ruby:jobs:ruby_30
     - name: Ruby 2.7
       commands:
       - checkout
       - bundle check &> /dev/null || bundle install
-      - bundle exec rake ci:arm64_mri_ruby:jobs:ruby_27 ci:arm64_mri_ruby:teardown
-        ci:teardown
+      - bundle exec rake ci:arm64_mri_ruby:jobs:ruby_27
 - name: 'amd64: JRuby'
   task:
     jobs:

@@ -52,6 +52,10 @@ module LocalCI
       "#{@task}:setup"
     end
 
+    def jobs_task
+      "#{@task}:jobs"
+    end
+
     def teardown_task
       "#{@task}:teardown"
     end
@@ -65,7 +69,7 @@ module LocalCI
     def setup_flow_tasks
       LocalCI::Task[setup_task]
 
-      LocalCI::Task.new("#{@task}:jobs", parallel_prerequisites: @parallel)
+      LocalCI::Task.new(jobs_task, parallel_prerequisites: @parallel)
 
       LocalCI::Task[teardown_task]
       LocalCI::Task[@task, @heading]
@@ -73,9 +77,8 @@ module LocalCI
       LocalCI::Task[setup_task]
       LocalCI::Task[setup_task].add_prerequisite "ci:setup"
 
-      LocalCI::Task[@task].add_prerequisite teardown_task
-      LocalCI::Task[teardown_task].add_prerequisite "#{@task}:jobs"
-      LocalCI::Task["#{@task}:jobs"].add_prerequisite setup_task
+      LocalCI::Task[@task].add_prerequisite jobs_task
+      LocalCI::Task[jobs_task].add_prerequisite setup_task
 
       LocalCI::Task["ci"].add_prerequisite @task
 

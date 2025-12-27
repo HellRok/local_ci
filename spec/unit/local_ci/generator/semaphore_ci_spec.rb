@@ -65,7 +65,7 @@ describe LocalCI::Generator::SemaphoreCI do
           "commands" => [
             "checkout",
             "bundle check &> /dev/null || bundle install",
-            "bundle exec rake ci:flow-1-job-1-task ci:flow-1:teardown ci:teardown"
+            "bundle exec rake ci:flow-1-job-1-task"
           ]
         }
       )
@@ -75,7 +75,7 @@ describe LocalCI::Generator::SemaphoreCI do
           "commands" => [
             "checkout",
             "bundle check &> /dev/null || bundle install",
-            "bundle exec rake ci:flow-1-job-2-task ci:flow-1:teardown ci:teardown"
+            "bundle exec rake ci:flow-1-job-2-task"
           ]
         }
       )

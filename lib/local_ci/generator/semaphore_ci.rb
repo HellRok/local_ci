@@ -30,7 +30,7 @@ module LocalCI
                   "commands" => [
                     "checkout",
                     "bundle check &> /dev/null || bundle install",
-                    "bundle exec rake #{job.task} #{flow.teardown_task} ci:teardown"
+                    "bundle exec rake #{job.task}"
                   ]
                 }
               end

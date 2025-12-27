@@ -114,8 +114,7 @@ describe LocalCI::Flow do
       )
 
       expect(Rake::Task["ci"].prerequisites).to eq(["ci:setup", "ci:test"])
-      expect(Rake::Task["ci:test"].prerequisites).to eq(["ci:test:teardown"])
-      expect(Rake::Task["ci:test:teardown"].prerequisites).to eq(["ci:test:jobs"])
+      expect(Rake::Task["ci:test"].prerequisites).to eq(["ci:test:jobs"])
       expect(Rake::Task["ci:test:jobs"].prerequisites).to eq(["ci:test:setup"])
       expect(Rake::Task["ci:test:setup"].prerequisites).to eq(["ci:setup"])
     end

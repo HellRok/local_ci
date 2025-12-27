@@ -19,7 +19,7 @@ module LocalCI
                   "label" => job.name,
                   "commands" => [
                     "bundle check &> /dev/null || bundle install",
-                    "bundle exec rake #{job.task} #{flow.teardown_task} ci:teardown"
+                    "bundle exec rake #{job.task}"
                   ]
                 }
               end

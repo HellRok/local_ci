@@ -170,6 +170,55 @@ describe LocalCI::Job do
         ::Rake::Task["ci:flow:jobs:raises_an_error"].invoke
       end
     end
+
+    context "when isolated" do
+      before do
+        allow(LocalCI::Helper.runner).to receive(:run)
+
+        flow = LocalCI::Job.new(
+          flow: @flow,
+          name: "command task",
+          command: ["command"],
+          block: nil
+        )
+
+        allow(flow).to receive(:isolated?).and_return(true)
+      end
+
+      it "invokes the flow specific teardown" do
+        ::Rake::Task["ci:flow:jobs:command_task"].invoke
+
+        expect(::Rake::Task["ci:flow:teardown"].already_invoked).to be(true)
+      end
+
+      it "invokes the global teardown" do
+        ::Rake::Task["ci:flow:jobs:command_task"].invoke
+
+        expect(::Rake::Task["ci:teardown"].already_invoked).to be(true)
+      end
+    end
+
+    context "when not isolated" do
+      before do
+        allow(LocalCI::Helper.runner).to receive(:run)
+
+        flow = LocalCI::Job.new(
+          flow: @flow,
+          name: "command task",
+          command: ["command"],
+          block: nil
+        )
+
+        allow(flow).to receive(:isolated?).and_return(false)
+      end
+
+      it "does not invoke any teardowns" do
+        ::Rake::Task["ci:flow:jobs:command_task"].invoke
+
+        expect(::Rake::Task["ci:flow:teardown"].already_invoked).to be(false)
+        expect(::Rake::Task["ci:teardown"].already_invoked).to be(false)
+      end
+    end
   end
 
   describe "#duration" do

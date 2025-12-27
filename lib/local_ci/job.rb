@@ -37,11 +37,16 @@ module LocalCI
       ensure
         @duration = duration
         @flow.output.update(self)
+
+        if isolated?
+          ::Rake::Task[@flow.teardown_task].invoke
+          ::Rake::Task["ci:teardown"].invoke
+        end
       end
 
-      ::Rake::Task["#{@flow.task}:jobs"].prerequisites << task
+      ::Rake::Task[@flow.jobs_task].prerequisites << task
 
-      ::Rake::Task[task].prerequisites << "#{@flow.task}:setup" if @flow.actions?
+      ::Rake::Task[task].prerequisites << @flow.setup_task if @flow.actions?
     end
 
     def isolated?
