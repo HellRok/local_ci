@@ -31,6 +31,12 @@ end
 
 %w[linux/386 linux/amd64 linux/arm/v7 linux/arm64].each do |platform|
   flow "#{platform.split("/", 2).last}: MRI Ruby" do
+    setup do
+      job "Install Docker multiplatform support" do
+        run "docker run --privileged --rm tonistiigi/binfmt --install all"
+      end
+    end
+
     %w[4.0 3.4 3.3 3.2 3.1 3.0 2.7].each do |version|
       job "Ruby #{version}" do
         run_on(
@@ -51,6 +57,12 @@ end
 # once.
 %w[linux/amd64 linux/arm64].each do |platform|
   flow "#{platform.split("/", 2).last}: JRuby", parallel: false do
+    setup do
+      job "Install Docker multiplatform support" do
+        run "docker run --privileged --rm tonistiigi/binfmt --install all"
+      end
+    end
+
     %w[10 9].each do |version|
       job "JRuby #{version}" do
         run_on(
