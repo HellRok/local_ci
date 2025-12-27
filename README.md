@@ -95,6 +95,7 @@ task "pre-push:semaphore:check" do
   puts "[✓] No changes"
 rescue RuntimeError
   puts "[x] Changes detected, check `git diff`"
+  exit 1
 end
 ```
 
